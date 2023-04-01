@@ -10,7 +10,10 @@ archivo.close()
 
 board = []
 for i in info:
-    board.append(i.split())
+    fila = i.split()
+    for h in range(len(fila)):
+        fila[h] = int(fila[h])
+    board.append(fila)
 
 def movements_table (sensores, hq):
     left_sen = sensores[0]
@@ -129,10 +132,12 @@ def create_board (matriz,size):
     for rows in matriz:
         i = i+1
         for cells in rows:
-            if (cells == 1):
+            if (cells == 0):
                 screen.blit(roadImage, ((j*size)+aux,(i*size)+aux))
-            elif(cells == 0):
+            elif(cells == 1):
                 screen.blit(wallImage, ((j*size)+aux,(i*size)+aux))
+            else: 
+                screen.blit(roadImage, ((j*size)+aux,(i*size)+aux))
             j = j+1
             if (j==tamanho):
                 j = 0
@@ -144,9 +149,9 @@ def create_board (matriz,size):
 
 # tamaño de las filas y columnas 
 # debe ser nxn
-n = 5
-m = 5
-
+n = len(board)
+m = len(board)
+print(n)
 #-----------------#
 def generate_rata():
     mouse = {'x':0, 'y':0}
@@ -272,19 +277,29 @@ def pintar_juego():
     #create_board(tablero,imgsize)
     create_board(board,imgsize)
     #pintar la rata
-    screen.blit(mouseImage, ((mouse.get('x')*imgsize),(mouse.get('y')*imgsize)))
+    screen.blit(gokuImg, ((mouse.get('x')*imgsize),(mouse.get('y')*imgsize)))
     #pintar el queso
-    screen.blit(cheeseImage, ((queso.get('x')*imgsize),(queso.get('y')*imgsize)))
+    screen.blit(ballImage, ((queso.get('x')*imgsize),(queso.get('y')*imgsize)))
+    #pintar un freezer test
+    screen.blit(freezerImg, ((2*imgsize),(0*imgsize)))
+    #pintar un cell 
+    screen.blit(cellImg, ((2*imgsize),(5*imgsize)))
+    #pintar una semilla
+    screen.blit(seedImg, ((1*imgsize),(0*imgsize)))
 
 #se inicia la aplicacion
 pygame.init()
 
 #se carga la imagen del raton y demas
-mouseImage = pygame.image.load('imagenes/rata2.png')
-cheeseImage = pygame.image.load('imagenes/queso.png')
-roadImage = pygame.image.load('imagenes/road1.png')
-wallImage = pygame.image.load('imagenes/wall.jpg')
 imgsize = 90
+mouseImage = pygame.image.load('imagenes/rata2.png')
+ballImage = pygame.transform.scale(pygame.image.load('imagenes/ball.png'), (85,85))
+roadImage = pygame.image.load('imagenes/path.png')
+wallImage = pygame.image.load('imagenes/muro.png')
+gokuImg =  pygame.transform.scale(pygame.image.load('imagenes/goku.png'), (85,85))
+freezerImg = pygame.transform.scale(pygame.image.load('imagenes/freezer.png'), (85,85))
+cellImg = pygame.transform.scale(pygame.image.load('imagenes/cell.png'), (85,85))
+seedImg = pygame.transform.scale(pygame.image.load('imagenes/seed.png'), (85,85))
 
 #Definir colores
 black = (0,0,0)
@@ -303,7 +318,6 @@ screen = pygame.display.set_mode(size)
 
 #llamado de la funcion tablero
 tablero = generate_matrix(n,m)
-
 #pintar el tablero inicial
 pintar_juego()
 

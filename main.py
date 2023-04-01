@@ -15,6 +15,31 @@ for i in info:
         fila[h] = int(fila[h])
     board.append(fila)
 
+#funcion que encuentra la posicion inicial de todos los elementos del tablero
+
+def find_initial_positions(board):
+    freezers = []
+    cells = []
+    balls = []
+    seeds = []
+    goku = []
+    for i in range(len(board)):
+        for h in range(len(board)):
+            if board[i][h] == 2:
+                goku.append([i,h])
+            elif board[i][h] == 3:
+                freezers.append([i,h])
+            elif board[i][h] == 4:
+                cells.append([i,h])
+            elif board[i][h] == 5:
+                seeds.append([i,h])
+            elif board[i][h] == 6:
+                balls.append([i,h])
+    return goku,freezers,cells,seeds,balls
+
+      
+
+
 def movements_table (sensores, hq):
     left_sen = sensores[0]
     right_sen = sensores[1]
@@ -270,6 +295,34 @@ def movement_rata(matriz):
             down_sen = True
         return [left_sen,right_sen,down_sen,up_sen]
 
+# llamdo de la funcion que obtiene las posiciones iniciales de los elementos
+kakaroto,freezers,cells,seeds,balls = find_initial_positions(board)
+
+#------------
+goku = {"row":kakaroto[0][1], "col":kakaroto[0][0]}
+
+#------------
+def pintar_freezers(freezers):
+    for i in range(len(freezers)):
+        row = freezers[i][0]
+        col = freezers[i][1]
+        screen.blit(freezerImg, ((col*imgsize),(row*imgsize)))
+def pintar_cells(cells):
+    for i in range(len(cells)):
+        row = cells[i][0]
+        col = cells[i][1]
+        screen.blit(cellImg, ((col*imgsize),(row*imgsize)))
+def pintar_seeds(seeds):
+    for i in range(len(seeds)):
+        row = seeds[i][0]
+        col = seeds[i][1]
+        screen.blit(seedImg, ((col*imgsize),(row*imgsize)))
+def pintar_balls(balls):
+    for i in range(len(balls)):
+        row = balls[i][0]
+        col = balls[i][1]
+        screen.blit(ballImage, ((col*imgsize),(row*imgsize)))
+
 def pintar_juego():
     #fondo blanco
     screen.fill(white)
@@ -277,15 +330,19 @@ def pintar_juego():
     #create_board(tablero,imgsize)
     create_board(board,imgsize)
     #pintar la rata
-    screen.blit(gokuImg, ((mouse.get('x')*imgsize),(mouse.get('y')*imgsize)))
-    #pintar el queso
-    screen.blit(ballImage, ((queso.get('x')*imgsize),(queso.get('y')*imgsize)))
+    screen.blit(gokuImg, ((goku.get('row')*imgsize),(goku.get('col')*imgsize)))
+    #pintar las esferas
+    pintar_balls(balls)
+    #screen.blit(ballImage, ((queso.get('x')*imgsize),(queso.get('y')*imgsize)))
     #pintar un freezer test
-    screen.blit(freezerImg, ((2*imgsize),(0*imgsize)))
+    pintar_freezers(freezers)
+    #screen.blit(freezerImg, ((2*imgsize),(0*imgsize)))
     #pintar un cell 
-    screen.blit(cellImg, ((2*imgsize),(5*imgsize)))
+    pintar_cells(cells)
+    #screen.blit(cellImg, ((2*imgsize),(5*imgsize)))
     #pintar una semilla
-    screen.blit(seedImg, ((1*imgsize),(0*imgsize)))
+    pintar_seeds(seeds)
+    #screen.blit(seedImg, ((1*imgsize),(0*imgsize)))
 
 #se inicia la aplicacion
 pygame.init()

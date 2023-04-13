@@ -23,3 +23,4 @@ Expandir los nodos.
 
 Evite devolverse, se puede devolver cuando cambia el estado entre casilla anterior y actual (utilizar el padre para saber el estado anterior).
 
+Permitir escoger que algoritmo se quiere ejecutar.

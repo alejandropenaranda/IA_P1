@@ -36,10 +36,7 @@ def find_initial_positions(board):
             elif board[i][h] == 6:
                 balls.append([i,h])
     return goku,freezers,cells,seeds,balls
-
-      
-
-
+"""
 def movements_table (sensores, hq):
     left_sen = sensores[0]
     right_sen = sensores[1]
@@ -112,16 +109,15 @@ def movements_table (sensores, hq):
     elif (left_sen == False and up_sen == False and right_sen == False and down_sen and hq == False): 
         action = 3
         return action
-    
+"""
+"""
 def huele_queso():
     if queso == mouse:
         return True
     else: 
         return False
-    
-def board_matrix(info):
-    info
-
+"""
+"""
 def generate_matrix(n,m):
     matriz = []
     for i in range(n):
@@ -131,10 +127,9 @@ def generate_matrix(n,m):
                 matriz[i].append(1) 
             elif i == queso.get('y') and h == queso.get('x'):
                 matriz[i].append(1) 
-            else:
-                matriz[i].append(wall_generator())
     return matriz
-
+"""
+"""
 #funcion retorna 1 o 0 dependiendo del valor que se genere automaticamente
 #se le da mas posibillidad de devolver 1 para que no hayan muchas paredes
 #1 es un espacio libre para avanzar
@@ -145,6 +140,7 @@ def wall_generator():
         return 0
     else:
         return 1
+"""
 
 #solo funciona para matrices nxn
 
@@ -178,39 +174,29 @@ n = len(board)
 m = len(board)
 print(n)
 #-----------------#
+"""
 def generate_rata():
     mouse = {'x':0, 'y':0}
     mouse.update({'x':random.randint(0,n-1), 'y':random.randint(0,m-1)})
     return  mouse
+"""
 
-#definicion de la rata
-mouse = generate_rata()
-
-def generate_queso():
-    queso = {'x':0, 'y':0}
-    queso.update({'x':random.randint(0,n-1), 'y':random.randint(0,m-1)})
-    if(mouse == queso):
-        queso = generate_queso()
-    return queso
-
-# the movements will be represented by numbers  1 = up, 2 = left, 3 = down, 4 = right
-def move_mouse(action):
-    if action == 1:
-        mouse.update({'y':mouse.get('y')-1})
-    elif action == 2:
-        mouse.update({'x':mouse.get('x')-1})
-    elif action == 3:
-        mouse.update({'y':mouse.get('y')+1})
-    elif action == 4:
-        mouse.update({'x':mouse.get('x')+1})
-    elif action == 5:
-        print("huele a queso")
-        sys.exit()
-    
-#definicion del queso
-queso = generate_queso()
-
-# y son las filas(abajo) ,   x las columas (izq derecha)
+"""
+                                    # the movements will be represented by numbers  1 = up, 2 = left, 3 = down, 4 = right
+                                    def move_mouse(action):
+                                    if action == 1:
+                                        mouse.update({'y':mouse.get('y')-1})
+                                    elif action == 2:
+                                        mouse.update({'x':mouse.get('x')-1})
+                                    elif action == 3:
+                                        mouse.update({'y':mouse.get('y')+1})
+                                    elif action == 4:
+                                        mouse.update({'x':mouse.get('x')+1})
+                                    elif action == 5:
+                                        print("huele a queso")
+                                        sys.exit()
+""" 
+"""
 def movement_rata(matriz):
 
     left_sen = False
@@ -294,7 +280,7 @@ def movement_rata(matriz):
         if matriz[mouse.get('y')+1][mouse.get('x')] == 1:
             down_sen = True
         return [left_sen,right_sen,down_sen,up_sen]
-
+"""
 # llamdo de la funcion que obtiene las posiciones iniciales de los elementos
 kakaroto,freezers,cells,seeds,balls = find_initial_positions(board)
 
@@ -349,14 +335,14 @@ pygame.init()
 
 #se carga la imagen del raton y demas
 imgsize = 90
-mouseImage = pygame.image.load('imagenes/rata2.png')
-ballImage = pygame.transform.scale(pygame.image.load('imagenes/ball.png'), (85,85))
+auxsize = 85
+ballImage = pygame.transform.scale(pygame.image.load('imagenes/ball.png'), (auxsize,auxsize))
 roadImage = pygame.image.load('imagenes/path.png')
 wallImage = pygame.image.load('imagenes/muro.png')
-gokuImg =  pygame.transform.scale(pygame.image.load('imagenes/goku.png'), (85,85))
-freezerImg = pygame.transform.scale(pygame.image.load('imagenes/freezer.png'), (85,85))
-cellImg = pygame.transform.scale(pygame.image.load('imagenes/cell.png'), (85,85))
-seedImg = pygame.transform.scale(pygame.image.load('imagenes/seed.png'), (85,85))
+gokuImg =  pygame.transform.scale(pygame.image.load('imagenes/goku.png'), (auxsize,auxsize))
+freezerImg = pygame.transform.scale(pygame.image.load('imagenes/freezer.png'), (auxsize,auxsize))
+cellImg = pygame.transform.scale(pygame.image.load('imagenes/cell.png'), (auxsize,auxsize))
+seedImg = pygame.transform.scale(pygame.image.load('imagenes/seed.png'), (auxsize,auxsize))
 
 #Definir colores
 black = (0,0,0)
@@ -373,22 +359,21 @@ size = (aux1,aux2)
 #definicion de la GUI
 screen = pygame.display.set_mode(size)
 
-#llamado de la funcion tablero
-tablero = generate_matrix(n,m)
 #pintar el tablero inicial
 pintar_juego()
 
-def aux():
+"""
+def aux():# se debe llamar la logica de movimiento del goku despues de haber encontado el la solucion
     movimiento_rata = movement_rata(tablero)
     move_mouse(movements_table(movimiento_rata,huele_queso()))
-
+"""
 #while para la logica o los eventos
 
 auxiliar=1
 while True:
     tiempo = math.floor(pygame.time.get_ticks()/1000)
     if tiempo == auxiliar:
-        aux()
+        #aux()
         pintar_juego()
         auxiliar = auxiliar+1
 

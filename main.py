@@ -1,6 +1,7 @@
 import pygame , sys
 import random
 import math
+from nodes import Nodo
 
 # Aqui se abre el archivo de texto que contiene el mapa y se guarda en la variable board en forma de matriz
 archivo = open("Prueba1.txt")
@@ -309,6 +310,8 @@ def pintar_balls(balls):
         col = balls[i][1]
         screen.blit(ballImage, ((col*imgsize),(row*imgsize)))
 
+# Comprueba si un nodo que se le ingrese es una meta    
+
 def pintar_juego():
     #fondo blanco
     screen.fill(white)
@@ -342,7 +345,7 @@ wallImage = pygame.image.load('imagenes/muro.png')
 gokuImg =  pygame.transform.scale(pygame.image.load('imagenes/goku.png'), (auxsize,auxsize))
 freezerImg = pygame.transform.scale(pygame.image.load('imagenes/freezer.png'), (auxsize,auxsize))
 cellImg = pygame.transform.scale(pygame.image.load('imagenes/cell.png'), (auxsize,auxsize))
-seedImg = pygame.transform.scale(pygame.image.load('imagenes/seed.png'), (auxsize,auxsize))
+seedImg = pygame.transform.scale(pygame.image.load('imagenes/semilla.png'), (auxsize,auxsize))
 
 #Definir colores
 black = (0,0,0)
@@ -360,6 +363,12 @@ size = (aux1,aux2)
 screen = pygame.display.set_mode(size)
 
 #pintar el tablero inicial
+
+nodoInicial = Nodo(0,0,[0],0,0,0)
+print(nodoInicial.esMeta())
+print(nodoInicial.showOperador())
+print(nodoInicial.showProfundidad())
+
 pintar_juego()
 
 """

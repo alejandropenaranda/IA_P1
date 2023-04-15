@@ -37,6 +37,23 @@ def find_initial_positions(board):
             elif board[i][h] == 6:
                 balls.append([i,h])
     return goku,freezers,cells,seeds,balls
+
+#funcion que le pregunta al usuario que algoritmo desea ejecutar
+def escogerAlgoritmo():
+    choice = input("ingrese el nombre del algoritmo de busqueda que desee ejecutar (costo, amplitud, profundidad, nombre, nombre):")
+    if choice == "costo":
+        pass
+    elif choice == "amplitud":
+        pass
+    elif choice == "profundidad":
+        pass
+    elif choice == "nombre":
+        pass
+    elif choice == "nombre":
+        pass
+    else:
+        print("escoja un algoritmo de busqueda valido")
+        sys.exit()
 """
 def movements_table (sensores, hq):
     left_sen = sensores[0]
@@ -285,6 +302,16 @@ def movement_rata(matriz):
 # llamdo de la funcion que obtiene las posiciones iniciales de los elementos
 kakaroto,freezers,cells,seeds,balls = find_initial_positions(board)
 
+#funcion que se encarga de expandir un nodo
+
+def expandirNodo(nodo):
+    if nodo.esMeta():
+        pass    #aqui se debe detener la busqueda y devolver el camino de la solucion
+    else:
+        pass    #aqui se debe llamar a la funcion que genera los hijos del nodo y meterlos en la cola de nodos
+
+
+#__________________________________________llamadas y definiciones de funciones que pintan la GUI
 #------------
 goku = {"row":kakaroto[0][1], "col":kakaroto[0][0]}
 
@@ -332,6 +359,24 @@ def pintar_juego():
     #pintar una semilla
     pintar_seeds(seeds)
     #screen.blit(seedImg, ((1*imgsize),(0*imgsize)))
+
+# funcion que le ingresa la lista de movimientos y actualiza la posicion de goku
+# 1 = izquierda
+# 2 = arriba
+# 3 = derecha
+# 4 = abajo
+
+def moverGoku(lista):
+    for i in lista:
+        if i == 1:
+            goku.update(col = goku['col'] - 1) # falta hacer que se vay pintando por iteracion
+        elif i == 2:
+            goku.update(row = goku['row'] + 1)
+        elif i == 3:
+            goku.update(col = goku['col'] + 1)
+        elif i == 4:
+            goku.update(row = goku['row'] - 1)
+
 
 #se inicia la aplicacion
 pygame.init()

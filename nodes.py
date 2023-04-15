@@ -33,3 +33,9 @@ class Nodo:
     
     def showProfundidad(self):
         return self.profundidad
+    
+    def same_state(self):
+        if self.bolas == self.padre.bolas and self.frezzers == self.padre.freezers and self.cells == self.padre.cells and self.semillas == self.padre.semillas:
+            return True
+        else:
+            return False

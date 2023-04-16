@@ -9,6 +9,7 @@ info = archivo.readlines()
 #print(info)
 archivo.close()
 
+cola = [] #se guardaran los nodos en este array
 board = []
 for i in info:
     fila = i.split()
@@ -42,15 +43,15 @@ def find_initial_positions(board):
 def escogerAlgoritmo():
     choice = input("ingrese el nombre del algoritmo de busqueda que desee ejecutar (costo, amplitud, profundidad, nombre, nombre):")
     if choice == "costo":
-        pass
+        return choice
     elif choice == "amplitud":
-        pass
+        return choice
     elif choice == "profundidad":
-        pass
+        return choice
     elif choice == "nombre":
-        pass
+        return choice
     elif choice == "nombre":
-        pass
+        return choice
     else:
         print("escoja un algoritmo de busqueda valido")
         sys.exit()
@@ -310,6 +311,22 @@ def expandirNodo(nodo):
     else:
         pass    #aqui se debe llamar a la funcion que genera los hijos del nodo y meterlos en la cola de nodos
 
+def expandirCola():
+    if algoritmo == "costo":
+        pass
+    elif algoritmo == "amplitud":
+        nodo = cola.pop(0)   #remueve el primer elemento de la cola y lo expande
+        expandirNodo(nodo)
+    elif algoritmo == "profundidad":
+        pass
+    elif algoritmo == "nombre":
+        pass
+    elif algoritmo == "nombre":
+        pass
+
+#__________________________________________definicion de variables globales
+
+algoritmo =escogerAlgoritmo()
 
 #__________________________________________llamadas y definiciones de funciones que pintan la GUI
 #------------
@@ -345,8 +362,6 @@ def pintar_juego():
     #pintar el tablero
     #create_board(tablero,imgsize)
     create_board(board,imgsize)
-    #pintar la rata
-    screen.blit(gokuImg, ((goku.get('row')*imgsize),(goku.get('col')*imgsize)))
     #pintar las esferas
     pintar_balls(balls)
     #screen.blit(ballImage, ((queso.get('x')*imgsize),(queso.get('y')*imgsize)))
@@ -359,6 +374,8 @@ def pintar_juego():
     #pintar una semilla
     pintar_seeds(seeds)
     #screen.blit(seedImg, ((1*imgsize),(0*imgsize)))
+    #pintar a goku
+    screen.blit(gokuImg, ((goku.get('row')*imgsize),(goku.get('col')*imgsize)))
 
 # funcion que le ingresa la lista de movimientos y actualiza la posicion de goku
 # 1 = izquierda
@@ -377,6 +394,17 @@ def moverGoku(lista):
         elif i == 4:
             goku.update(row = goku['row'] - 1)
 
+def agregarNodoCola(nodo):
+    if algoritmo == "costo":
+        cola.append(nodo) #agrega el nodo al final de la cola pero da igual el orden revisar si optimizamos esto
+    elif algoritmo == "amplitud":
+        cola.append(nodo) #agrega el nodo al final de la cola
+    elif algoritmo == "profundidad":
+        cola.insert(0,nodo) #agrega el nodo al principio de la cola
+    elif algoritmo == "nombre":
+        pass
+    elif algoritmo == "nombre":
+        pass
 
 #se inicia la aplicacion
 pygame.init()
@@ -413,24 +441,23 @@ nodoInicial = Nodo(0,0,[0],0,0,0)
 print(nodoInicial.esMeta())
 print(nodoInicial.showOperador())
 print(nodoInicial.showProfundidad())
-
+agregarNodoCola(nodoInicial) #agrega un nodo a la cola
+expandirCola() #expande la cola o sea saca el primer elemento
 pintar_juego()
 
-"""
-def aux():# se debe llamar la logica de movimiento del goku despues de haber encontado el la solucion
-    movimiento_rata = movement_rata(tablero)
-    move_mouse(movements_table(movimiento_rata,huele_queso()))
-"""
 #while para la logica o los eventos
 
 auxiliar=1
+movimientoGoku = [3,3,3,3,3,3,3,4,4,4,4,4] # se deben de ingresar la lista de los movimientos de la solucion encontrada
 while True:
     tiempo = math.floor(pygame.time.get_ticks()/1000)
     if tiempo == auxiliar:
-        #aux()
-        pintar_juego()
+        if(auxiliar > len(movimientoGoku)): #se termina el juego cuando goku realizo todos los movimientos
+            sys.exit()
+        moverGoku(movimientoGoku[auxiliar-1:auxiliar]) #se le ingresa de 1 en 1 los valores en movimientoGoku
+        pintar_juego()          # Se debe de modificar esta funcion para pintar los valores que se le ingresan
+                                # el goku mata un freezer entonces debe de borrarse 
         auxiliar = auxiliar+1
-
     pygame.display.flip()
     pygame.display.update()
     

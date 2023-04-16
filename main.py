@@ -1,6 +1,7 @@
 import pygame , sys
 import random
 import math
+from nodes import Nodo
 
 # Aqui se abre el archivo de texto que contiene el mapa y se guarda en la variable board en forma de matriz
 archivo = open("Prueba1.txt")
@@ -8,6 +9,7 @@ info = archivo.readlines()
 #print(info)
 archivo.close()
 
+cola = [] #se guardaran los nodos en este array
 board = []
 for i in info:
     fila = i.split()
@@ -15,6 +17,45 @@ for i in info:
         fila[h] = int(fila[h])
     board.append(fila)
 
+#funcion que encuentra la posicion inicial de todos los elementos del tablero
+
+def find_initial_positions(board):
+    freezers = []
+    cells = []
+    balls = []
+    seeds = []
+    goku = []
+    for i in range(len(board)):
+        for h in range(len(board)):
+            if board[i][h] == 2:
+                goku.append([i,h])
+            elif board[i][h] == 3:
+                freezers.append([i,h])
+            elif board[i][h] == 4:
+                cells.append([i,h])
+            elif board[i][h] == 5:
+                seeds.append([i,h])
+            elif board[i][h] == 6:
+                balls.append([i,h])
+    return goku,freezers,cells,seeds,balls
+
+#funcion que le pregunta al usuario que algoritmo desea ejecutar
+def escogerAlgoritmo():
+    choice = input("ingrese el nombre del algoritmo de busqueda que desee ejecutar (costo, amplitud, profundidad, nombre, nombre):")
+    if choice == "costo":
+        return choice
+    elif choice == "amplitud":
+        return choice
+    elif choice == "profundidad":
+        return choice
+    elif choice == "nombre":
+        return choice
+    elif choice == "nombre":
+        return choice
+    else:
+        print("escoja un algoritmo de busqueda valido")
+        sys.exit()
+"""
 def movements_table (sensores, hq):
     left_sen = sensores[0]
     right_sen = sensores[1]
@@ -87,16 +128,15 @@ def movements_table (sensores, hq):
     elif (left_sen == False and up_sen == False and right_sen == False and down_sen and hq == False): 
         action = 3
         return action
-    
+"""
+"""
 def huele_queso():
     if queso == mouse:
         return True
     else: 
         return False
-    
-def board_matrix(info):
-    info
-
+"""
+"""
 def generate_matrix(n,m):
     matriz = []
     for i in range(n):
@@ -106,10 +146,9 @@ def generate_matrix(n,m):
                 matriz[i].append(1) 
             elif i == queso.get('y') and h == queso.get('x'):
                 matriz[i].append(1) 
-            else:
-                matriz[i].append(wall_generator())
     return matriz
-
+"""
+"""
 #funcion retorna 1 o 0 dependiendo del valor que se genere automaticamente
 #se le da mas posibillidad de devolver 1 para que no hayan muchas paredes
 #1 es un espacio libre para avanzar
@@ -120,6 +159,7 @@ def wall_generator():
         return 0
     else:
         return 1
+"""
 
 #solo funciona para matrices nxn
 
@@ -153,39 +193,29 @@ n = len(board)
 m = len(board)
 print(n)
 #-----------------#
+"""
 def generate_rata():
     mouse = {'x':0, 'y':0}
     mouse.update({'x':random.randint(0,n-1), 'y':random.randint(0,m-1)})
     return  mouse
+"""
 
-#definicion de la rata
-mouse = generate_rata()
-
-def generate_queso():
-    queso = {'x':0, 'y':0}
-    queso.update({'x':random.randint(0,n-1), 'y':random.randint(0,m-1)})
-    if(mouse == queso):
-        queso = generate_queso()
-    return queso
-
-# the movements will be represented by numbers  1 = up, 2 = left, 3 = down, 4 = right
-def move_mouse(action):
-    if action == 1:
-        mouse.update({'y':mouse.get('y')-1})
-    elif action == 2:
-        mouse.update({'x':mouse.get('x')-1})
-    elif action == 3:
-        mouse.update({'y':mouse.get('y')+1})
-    elif action == 4:
-        mouse.update({'x':mouse.get('x')+1})
-    elif action == 5:
-        print("huele a queso")
-        sys.exit()
-    
-#definicion del queso
-queso = generate_queso()
-
-# y son las filas(abajo) ,   x las columas (izq derecha)
+"""
+                                    # the movements will be represented by numbers  1 = up, 2 = left, 3 = down, 4 = right
+                                    def move_mouse(action):
+                                    if action == 1:
+                                        mouse.update({'y':mouse.get('y')-1})
+                                    elif action == 2:
+                                        mouse.update({'x':mouse.get('x')-1})
+                                    elif action == 3:
+                                        mouse.update({'y':mouse.get('y')+1})
+                                    elif action == 4:
+                                        mouse.update({'x':mouse.get('x')+1})
+                                    elif action == 5:
+                                        print("huele a queso")
+                                        sys.exit()
+""" 
+"""
 def movement_rata(matriz):
 
     left_sen = False
@@ -269,6 +299,62 @@ def movement_rata(matriz):
         if matriz[mouse.get('y')+1][mouse.get('x')] == 1:
             down_sen = True
         return [left_sen,right_sen,down_sen,up_sen]
+"""
+# llamdo de la funcion que obtiene las posiciones iniciales de los elementos
+kakaroto,freezers,cells,seeds,balls = find_initial_positions(board)
+
+#funcion que se encarga de expandir un nodo
+
+def expandirNodo(nodo):
+    if nodo.esMeta():
+        pass    #aqui se debe detener la busqueda y devolver el camino de la solucion
+    else:
+        pass    #aqui se debe llamar a la funcion que genera los hijos del nodo y meterlos en la cola de nodos
+
+def expandirCola():
+    if algoritmo == "costo":
+        pass
+    elif algoritmo == "amplitud":
+        nodo = cola.pop(0)   #remueve el primer elemento de la cola y lo expande
+        expandirNodo(nodo)
+    elif algoritmo == "profundidad":
+        pass
+    elif algoritmo == "nombre":
+        pass
+    elif algoritmo == "nombre":
+        pass
+
+#__________________________________________definicion de variables globales
+
+algoritmo =escogerAlgoritmo()
+
+#__________________________________________llamadas y definiciones de funciones que pintan la GUI
+#------------
+goku = {"row":kakaroto[0][1], "col":kakaroto[0][0]}
+
+#------------
+def pintar_freezers(freezers):
+    for i in range(len(freezers)):
+        row = freezers[i][0]
+        col = freezers[i][1]
+        screen.blit(freezerImg, ((col*imgsize),(row*imgsize)))
+def pintar_cells(cells):
+    for i in range(len(cells)):
+        row = cells[i][0]
+        col = cells[i][1]
+        screen.blit(cellImg, ((col*imgsize),(row*imgsize)))
+def pintar_seeds(seeds):
+    for i in range(len(seeds)):
+        row = seeds[i][0]
+        col = seeds[i][1]
+        screen.blit(seedImg, ((col*imgsize),(row*imgsize)))
+def pintar_balls(balls):
+    for i in range(len(balls)):
+        row = balls[i][0]
+        col = balls[i][1]
+        screen.blit(ballImage, ((col*imgsize),(row*imgsize)))
+
+# Comprueba si un nodo que se le ingrese es una meta    
 
 def pintar_juego():
     #fondo blanco
@@ -276,30 +362,63 @@ def pintar_juego():
     #pintar el tablero
     #create_board(tablero,imgsize)
     create_board(board,imgsize)
-    #pintar la rata
-    screen.blit(gokuImg, ((mouse.get('x')*imgsize),(mouse.get('y')*imgsize)))
-    #pintar el queso
-    screen.blit(ballImage, ((queso.get('x')*imgsize),(queso.get('y')*imgsize)))
+    #pintar las esferas
+    pintar_balls(balls)
+    #screen.blit(ballImage, ((queso.get('x')*imgsize),(queso.get('y')*imgsize)))
     #pintar un freezer test
-    screen.blit(freezerImg, ((2*imgsize),(0*imgsize)))
+    pintar_freezers(freezers)
+    #screen.blit(freezerImg, ((2*imgsize),(0*imgsize)))
     #pintar un cell 
-    screen.blit(cellImg, ((2*imgsize),(5*imgsize)))
+    pintar_cells(cells)
+    #screen.blit(cellImg, ((2*imgsize),(5*imgsize)))
     #pintar una semilla
-    screen.blit(seedImg, ((1*imgsize),(0*imgsize)))
+    pintar_seeds(seeds)
+    #screen.blit(seedImg, ((1*imgsize),(0*imgsize)))
+    #pintar a goku
+    screen.blit(gokuImg, ((goku.get('row')*imgsize),(goku.get('col')*imgsize)))
+
+# funcion que le ingresa la lista de movimientos y actualiza la posicion de goku
+# 1 = izquierda
+# 2 = arriba
+# 3 = derecha
+# 4 = abajo
+
+def moverGoku(lista):
+    for i in lista:
+        if i == 1:
+            goku.update(col = goku['col'] - 1) # falta hacer que se vay pintando por iteracion
+        elif i == 2:
+            goku.update(row = goku['row'] + 1)
+        elif i == 3:
+            goku.update(col = goku['col'] + 1)
+        elif i == 4:
+            goku.update(row = goku['row'] - 1)
+
+def agregarNodoCola(nodo):
+    if algoritmo == "costo":
+        cola.append(nodo) #agrega el nodo al final de la cola pero da igual el orden revisar si optimizamos esto
+    elif algoritmo == "amplitud":
+        cola.append(nodo) #agrega el nodo al final de la cola
+    elif algoritmo == "profundidad":
+        cola.insert(0,nodo) #agrega el nodo al principio de la cola
+    elif algoritmo == "nombre":
+        pass
+    elif algoritmo == "nombre":
+        pass
 
 #se inicia la aplicacion
 pygame.init()
 
 #se carga la imagen del raton y demas
 imgsize = 90
-mouseImage = pygame.image.load('imagenes/rata2.png')
-ballImage = pygame.transform.scale(pygame.image.load('imagenes/ball.png'), (85,85))
+auxsize = 85
+ballImage = pygame.transform.scale(pygame.image.load('imagenes/ball.png'), (auxsize,auxsize))
 roadImage = pygame.image.load('imagenes/path.png')
 wallImage = pygame.image.load('imagenes/muro.png')
-gokuImg =  pygame.transform.scale(pygame.image.load('imagenes/goku.png'), (85,85))
-freezerImg = pygame.transform.scale(pygame.image.load('imagenes/freezer.png'), (85,85))
-cellImg = pygame.transform.scale(pygame.image.load('imagenes/cell.png'), (85,85))
-seedImg = pygame.transform.scale(pygame.image.load('imagenes/seed.png'), (85,85))
+gokuImg =  pygame.transform.scale(pygame.image.load('imagenes/goku.png'), (auxsize,auxsize))
+freezerImg = pygame.transform.scale(pygame.image.load('imagenes/freezer.png'), (auxsize,auxsize))
+cellImg = pygame.transform.scale(pygame.image.load('imagenes/cell.png'), (auxsize,auxsize))
+seedImg = pygame.transform.scale(pygame.image.load('imagenes/semilla.png'), (auxsize,auxsize))
 
 #Definir colores
 black = (0,0,0)
@@ -316,25 +435,29 @@ size = (aux1,aux2)
 #definicion de la GUI
 screen = pygame.display.set_mode(size)
 
-#llamado de la funcion tablero
-tablero = generate_matrix(n,m)
 #pintar el tablero inicial
-pintar_juego()
 
-def aux():
-    movimiento_rata = movement_rata(tablero)
-    move_mouse(movements_table(movimiento_rata,huele_queso()))
+nodoInicial = Nodo(0,0,[0],0,0,0)
+print(nodoInicial.esMeta())
+print(nodoInicial.showOperador())
+print(nodoInicial.showProfundidad())
+agregarNodoCola(nodoInicial) #agrega un nodo a la cola
+expandirCola() #expande la cola o sea saca el primer elemento
+pintar_juego()
 
 #while para la logica o los eventos
 
 auxiliar=1
+movimientoGoku = [3,3,3,3,3,3,3,4,4,4,4,4] # se deben de ingresar la lista de los movimientos de la solucion encontrada
 while True:
     tiempo = math.floor(pygame.time.get_ticks()/1000)
     if tiempo == auxiliar:
-        aux()
-        pintar_juego()
+        if(auxiliar > len(movimientoGoku)): #se termina el juego cuando goku realizo todos los movimientos
+            sys.exit()
+        moverGoku(movimientoGoku[auxiliar-1:auxiliar]) #se le ingresa de 1 en 1 los valores en movimientoGoku
+        pintar_juego()          # Se debe de modificar esta funcion para pintar los valores que se le ingresan
+                                # el goku mata un freezer entonces debe de borrarse 
         auxiliar = auxiliar+1
-
     pygame.display.flip()
     pygame.display.update()
     

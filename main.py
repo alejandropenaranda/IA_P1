@@ -309,20 +309,30 @@ def expandirNodo(nodo):
     if nodo.esMeta():
         pass    #aqui se debe detener la busqueda y devolver el camino de la solucion
     else:
-        pass    #aqui se debe llamar a la funcion que genera los hijos del nodo y meterlos en la cola de nodos
+        #costo,semillas,etc = funcionAcciones(nodo)
+        #nuevoNodo=Nodo(costo,semillas,etc)
+        nuevoNodo=Nodo(1,0,[0],0,0,[goku],nodoInicial,"izquierda")
+        agregarNodoCola(nuevoNodo)
+        #print(nuevoNodo.recorrer_arbol_arriba()) se muestra lista con los dos nodos creados
+            #aqui se debe llamar a la funcion que genera los hijos del nodo y meterlos en la cola de nodos
 
 def expandirCola():
     if algoritmo == "costo":
         pass
     elif algoritmo == "amplitud":
         nodo = cola.pop(0)   #remueve el primer elemento de la cola y lo expande
-        expandirNodo(nodo)
+        expandirNodo(nodo) 
     elif algoritmo == "profundidad":
         pass
     elif algoritmo == "nombre":
         pass
     elif algoritmo == "nombre":
         pass
+
+def crearNodos():
+    expandirCola()
+    #while True:        #aqui va la logica de crear todos los nodos
+        #pass    
 
 #__________________________________________definicion de variables globales
 
@@ -435,15 +445,12 @@ size = (aux1,aux2)
 #definicion de la GUI
 screen = pygame.display.set_mode(size)
 
-#pintar el tablero inicial
+#generar la solucion del algoritmo inicial
 
-nodoInicial = Nodo(0,0,[0],0,0,0)
-print(nodoInicial.esMeta())
-print(nodoInicial.showOperador())
-print(nodoInicial.showProfundidad())
-agregarNodoCola(nodoInicial) #agrega un nodo a la cola
-expandirCola() #expande la cola o sea saca el primer elemento
-pintar_juego()
+nodoInicial = Nodo(0,0,[0],0,0,0) #nodo raiz
+agregarNodoCola(nodoInicial) #agrega la raiz a la cola
+crearNodos() #expande la cola o sea saca el primer elemento y encuentra todos los nodos
+pintar_juego() #pinta el tablero
 
 #while para la logica o los eventos
 

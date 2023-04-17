@@ -28,6 +28,24 @@ class Nodo:
         else:
             return False    
     
+    def showCosto(self):
+        return self.costo
+    
+    def showSemillas(self):
+        return self.semillas
+    
+    def showBolas(self):
+        return self.bolas
+    
+    def showFrezzers(self):
+        return self.frezzers
+    
+    def showCells(self):
+        return self.cells
+    
+    def showKakaroto(self):
+        return self.kakaroto
+    
     def showOperador(self):
         return self.operador
     

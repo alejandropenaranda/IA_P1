@@ -7,7 +7,7 @@ To do
 Falta 
 Implementar el metodo que genera las posibles acciones o los operadores del problema.
 
-Implementar el metodo que genera los nodos hasta que encuentra la solucion.
+Implementar el metodo que genera los nodos hasta que encuentra la solucion. (se implemento una funcion que expande el nodo raiz y con la futura funcion que genera los operadores, (de momento no se tiene en cuenta) crear todos los nodos)
 
 Implementar el movimiento de goku cuando se genera la solucion. (se planteo la base de una funcion que resive la lista de movimiento y a partir de esto va cambiando la posiciond de goku falta terminarla)
 -Se creo un arreglo con los movimientos de goku y se termina la aplicacion cuando llega al ultimo movimiento.

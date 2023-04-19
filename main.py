@@ -1,6 +1,7 @@
 import pygame , sys
 import random
 import math
+import numpy as np
 from nodes import Nodo
 
 # Aqui se abre el archivo de texto que contiene el mapa y se guarda en la variable board en forma de matriz
@@ -8,6 +9,14 @@ archivo = open("Prueba1.txt")
 info = archivo.readlines()
 #print(info)
 archivo.close()
+
+#Se crea una matriz de 10x10
+mapa = np.zeros((10, 10), dtype=int)
+
+#Creamos un nodo unicial, en donde se guardara el estado inicial
+nodo_raiz= Nodo(costo=0, semillas=[], bolas=[], frezzers=[], cells=[], kakaroto=[])
+
+print("nodo_raiz",nodo_raiz.showKakaroto())
 
 cola = [] #se guardaran los nodos en este array
 board = []
@@ -25,19 +34,352 @@ def find_initial_positions(board):
     balls = []
     seeds = []
     goku = []
+    kakaroto = None
     for i in range(len(board)):
         for h in range(len(board)):
-            if board[i][h] == 2:
+            if board[i][h] == 1:
+                mapa[[i],[h]]=1
+            elif board[i][h] == 2:
                 goku.append([i,h])
+                mapa[[i],[h]]=2
+                kakaroto = [i,h]
             elif board[i][h] == 3:
                 freezers.append([i,h])
+                mapa[[i],[h]]=3
             elif board[i][h] == 4:
                 cells.append([i,h])
+                mapa[[i],[h]]=4
             elif board[i][h] == 5:
                 seeds.append([i,h])
+                mapa[[i],[h]]=5
             elif board[i][h] == 6:
                 balls.append([i,h])
+                mapa[[i],[h]]=6
+
+    nodo_raiz.semillas=seeds
+    nodo_raiz.bolas=balls
+    nodo_raiz.frezzers=freezers
+    nodo_raiz.cells=cells
+    nodo_raiz.kakaroto=kakaroto
+    print("mapa:",mapa)
+    print("despues:")
+    print("Semillas",nodo_raiz.showSemillas())
+    print("Bolas",nodo_raiz.showBolas())
+    print("Frezzers",nodo_raiz.showFrezzers())
+    print("Cells",nodo_raiz.showCells())
+    print("Kakaroto",nodo_raiz.showKakaroto())
+    print("----------------")
     return goku,freezers,cells,seeds,balls
+
+def puede_moverse(nodo):
+    nodos_posibles = []
+    #nodos_recorridos = nodo.recorrer_arbol_arriba()
+
+    #----------arriba-------------
+    fila_nueva = nodo.showKakaroto()[0] - 1
+
+    #0,Si es un espacio vacio
+    if fila_nueva >= 0 and mapa[fila_nueva, nodo.showKakaroto()[1]] == 0:
+        print("arriba espacio vacio")
+        nodo_aux = Nodo(nodo.costo+1, nodo.semillas, nodo.bolas, nodo.frezzers, nodo.cells, kakaroto=[nodo.showKakaroto()[0]-1,nodo.showKakaroto()[1]], padre=nodo)
+        if nodo_aux.comparar_posicion():
+            if nodo_aux.nodo_puede_devolverse():
+                nodos_posibles.append(nodo_aux)
+        else:
+            nodos_posibles.append(nodo_aux)
+            print("Kakaroto",nodo_aux.showKakaroto())
+            print("Costo",nodo_aux.showCosto())
+
+    #3,Si es un Frezzer
+    elif fila_nueva >= 0 and mapa[fila_nueva, nodo.showKakaroto()[1]] == 3:
+        print("arriba Frezzer")
+        nodo_aux = Nodo(nodo.costo+4, nodo.semillas, nodo.bolas, nodo.frezzers, nodo.cells, kakaroto=[nodo.showKakaroto()[0]-1,nodo.showKakaroto()[1]], padre=nodo)
+        if nodo_aux.comparar_posicion():
+            if nodo_aux.nodo_puede_devolverse():
+                nodos_posibles.append(nodo_aux)
+        else:
+            nodos_posibles.append(nodo_aux)
+            print("Frezzer",nodo_aux.showFrezzers())
+            print("Kakaroto",nodo_aux.showKakaroto())
+            print("Costo",nodo_aux.showCosto())
+    
+    #4,Si es un Cell
+    elif fila_nueva >= 0 and mapa[fila_nueva, nodo.showKakaroto()[1]] == 4:
+        print("arriba Cell")
+        nodo_aux = Nodo(nodo.costo+7, nodo.semillas, nodo.bolas, nodo.frezzers, nodo.cells, kakaroto=[nodo.showKakaroto()[0]-1,nodo.showKakaroto()[1]], padre=nodo)
+        if nodo_aux.comparar_posicion():
+            if nodo_aux.nodo_puede_devolverse():
+                nodos_posibles.append(nodo_aux)
+        else:
+            nodos_posibles.append(nodo_aux)
+            print("Cell",nodo_aux.showCells())
+            print("Kakaroto",nodo_aux.showKakaroto())
+            print("Costo",nodo_aux.showCosto())
+
+    #5,Si es una semilla, falta poner la logica para la semilla
+    elif fila_nueva >= 0 and mapa[fila_nueva, nodo.showKakaroto()[1]] == 5:
+        print("arriba Semilla")
+        print("semillas antes de eliminar", nodo.showSemillas())
+        nodo_aux = Nodo(nodo.costo+1, nodo.eliminarSemilla([fila_nueva,nodo.showKakaroto()[1]]), nodo.bolas, nodo.frezzers, nodo.cells, kakaroto=[nodo.showKakaroto()[0]-1,nodo.showKakaroto()[1]], padre=nodo)
+        if nodo_aux.comparar_posicion():
+            if nodo_aux.nodo_puede_devolverse():
+                nodos_posibles.append(nodo_aux)
+        else:
+            nodos_posibles.append(nodo_aux)
+            print("Semillas",nodo_aux.showSemillas())
+            print("Kakaroto",nodo_aux.showKakaroto())
+            print("Costo",nodo_aux.showCosto())
+        nodo.semillas.append([fila_nueva,nodo.showKakaroto()[1]])#Se vuelve a agregar al nodo raiz la semilla que fue recolectada por kakaroto para el calculo de las demas posiciones
+
+    #6,Si es una esfera, falta poner la logica para la esfera
+    elif fila_nueva >= 0 and mapa[fila_nueva, nodo.showKakaroto()[1]] == 6:
+        print("arriba esfera")
+        print("bolas antes de eliminar", nodo.showBolas())
+        nodo_aux = Nodo(nodo.costo+1, nodo.semillas, nodo.eliminarBola([fila_nueva,nodo.showKakaroto()[1]]), nodo.frezzers, nodo.cells, kakaroto=[nodo.showKakaroto()[0]-1,nodo.showKakaroto()[1]], padre=nodo)
+        if nodo_aux.comparar_posicion():
+            if nodo_aux.nodo_puede_devolverse():
+                nodos_posibles.append(nodo_aux)
+        else:
+            nodos_posibles.append(nodo_aux)
+            print("Esferas",nodo_aux.showBolas())
+            print("Kakaroto",nodo_aux.showKakaroto())
+            print("Costo",nodo_aux.showCosto())
+        nodo.bolas.append([fila_nueva,nodo.showKakaroto()[1]])#Se vuelve a agregar al nodo raiz la bola que fue recolectada por kakaroto para el calculo de las demas posiciones
+    else:
+        print("no arriba")
+        
+
+    print("--------")
+    #-----------abajo-----------
+    fila_nueva = nodo.showKakaroto()[0] + 1
+
+    if fila_nueva < mapa.shape[0] and mapa[fila_nueva, nodo.showKakaroto()[1]] == 0:
+        print("abajo espacio vacio")
+        nodo_aux = Nodo(nodo.costo+1, nodo.semillas, nodo.bolas, nodo.frezzers, nodo.cells, kakaroto=[nodo.showKakaroto()[0]+1,nodo.showKakaroto()[1]], padre=nodo)
+        if nodo_aux.comparar_posicion():
+            if nodo_aux.nodo_puede_devolverse():
+                nodos_posibles.append(nodo_aux)
+        else:
+            nodos_posibles.append(nodo_aux)
+            print("Kakaroto",nodo_aux.showKakaroto())
+            print("Costo",nodo_aux.showCosto())
+
+#***
+    #3,Si es un Frezzer
+    elif fila_nueva >= 0 and mapa[fila_nueva, nodo.showKakaroto()[1]] == 3:
+        print("abajo Frezzer")
+        nodo_aux = Nodo(nodo.costo+4, nodo.semillas, nodo.bolas, nodo.frezzers, nodo.cells, kakaroto=[nodo.showKakaroto()[0]+1,nodo.showKakaroto()[1]], padre=nodo)
+        if nodo_aux.comparar_posicion():
+            if nodo_aux.nodo_puede_devolverse():
+                nodos_posibles.append(nodo_aux)
+        else:
+            nodos_posibles.append(nodo_aux)
+            print("Frezzer",nodo_aux.showFrezzers())
+            print("Kakaroto",nodo_aux.showKakaroto())
+            print("Costo",nodo_aux.showCosto())
+    
+    #4,Si es un Cell
+    elif fila_nueva >= 0 and mapa[fila_nueva, nodo.showKakaroto()[1]] == 4:
+        print("abajo Cell")
+        nodo_aux = Nodo(nodo.costo+7, nodo.semillas, nodo.bolas, nodo.frezzers, nodo.cells, kakaroto=[nodo.showKakaroto()[0]+1,nodo.showKakaroto()[1]], padre=nodo)
+        if nodo_aux.comparar_posicion():
+            if nodo_aux.nodo_puede_devolverse():
+                nodos_posibles.append(nodo_aux)
+        else:
+            nodos_posibles.append(nodo_aux)
+            print("Cell",nodo_aux.showCells())
+            print("Kakaroto",nodo_aux.showKakaroto())
+            print("Costo",nodo_aux.showCosto())
+
+    #5,Si es una semilla, falta poner la logica para la semilla
+    elif fila_nueva >= 0 and mapa[fila_nueva, nodo.showKakaroto()[1]] == 5:
+        print("abajo semilla")
+        print("semillas antes de eliminar",nodo.showSemillas())
+        nodo_aux = Nodo(nodo.costo+1, nodo.eliminarSemilla([fila_nueva,nodo.showKakaroto()[1]]), nodo.bolas, nodo.frezzers, nodo.cells, kakaroto=[nodo.showKakaroto()[0]+1,nodo.showKakaroto()[1]], padre=nodo)
+        #nodo.adicionarSemilla([fila_nueva,nodo.showKakaroto()[1]])
+        if nodo_aux.comparar_posicion():
+            if nodo_aux.nodo_puede_devolverse():
+                nodos_posibles.append(nodo_aux)
+        else:
+            nodos_posibles.append(nodo_aux)
+            print("Semillas",nodo_aux.showSemillas())
+            print("Kakaroto",nodo_aux.showKakaroto())
+            print("Costo",nodo_aux.showCosto())
+        nodo.semillas.append([fila_nueva,nodo.showKakaroto()[1]])#Se vuelve a agregar al nodo raiz la semilla que fue recolectada por kakaroto para el calculo de las demas posiciones
+
+    #6,Si es una esfera, falta poner la logica para la esfera
+    elif fila_nueva >= 0 and mapa[fila_nueva, nodo.showKakaroto()[1]] == 6:
+        print("abajo esfera")
+        print("bolas antes de eliminar",nodo.showBolas())
+        nodo_aux = Nodo(nodo.costo+1, nodo.semillas, nodo.eliminarBola([fila_nueva,nodo.showKakaroto()[1]]), nodo.frezzers, nodo.cells, kakaroto=[nodo.showKakaroto()[0]+1,nodo.showKakaroto()[1]], padre=nodo)
+        if nodo_aux.comparar_posicion():
+            if nodo_aux.nodo_puede_devolverse():
+                nodos_posibles.append(nodo_aux)
+        else:
+            nodos_posibles.append(nodo_aux)
+            print("Esferas",nodo_aux.showBolas())
+            print("Kakaroto",nodo_aux.showKakaroto())
+            print("Costo",nodo_aux.showCosto())
+        nodo.bolas.append([fila_nueva,nodo.showKakaroto()[1]])#Se vuelve a agregar al nodo raiz la bola que fue recolectada por kakaroto para el calculo de las demas posiciones
+#***
+
+    else:
+        print("no abajo")
+
+
+    print("--------")
+    #----------------izquierda------------
+    columna_nueva = nodo.showKakaroto()[1] - 1
+    if columna_nueva >= 0 and mapa[nodo.showKakaroto()[0], columna_nueva] == 0:
+        print("izquierda espacio vacio")
+        nodo_aux = Nodo(nodo.costo+1, nodo.semillas, nodo.bolas, nodo.frezzers, nodo.cells, kakaroto=[nodo.showKakaroto()[0],nodo.showKakaroto()[1] - 1], padre=nodo)
+        if nodo_aux.comparar_posicion():
+            if nodo_aux.nodo_puede_devolverse():
+                nodos_posibles.append(nodo_aux)
+        else:
+            nodos_posibles.append(nodo_aux)
+            print("Kakaroto",nodo_aux.showKakaroto())
+            print("Costo",nodo_aux.showCosto())
+
+    #3,Si es un Frezzer
+    elif columna_nueva >= 0 and mapa[nodo.showKakaroto()[0], columna_nueva] == 3:
+        print("izquierda Frezzer")
+        nodo_aux = Nodo(nodo.costo+4, nodo.semillas, nodo.bolas, nodo.frezzers, nodo.cells, kakaroto=[nodo.showKakaroto()[0],nodo.showKakaroto()[1] - 1], padre=nodo)
+        if nodo_aux.comparar_posicion():
+            if nodo_aux.nodo_puede_devolverse():
+                nodos_posibles.append(nodo_aux)
+        else:
+            nodos_posibles.append(nodo_aux)
+            print("Frezzer",nodo_aux.showFrezzers())
+            print("Kakaroto",nodo_aux.showKakaroto())
+            print("Costo",nodo_aux.showCosto())
+
+    #4,Si es un Cell
+    elif columna_nueva >= 0 and mapa[nodo.showKakaroto()[0], columna_nueva] == 4:
+        print("izquierda Cell")
+        nodo_aux = Nodo(nodo.costo+7, nodo.semillas, nodo.bolas, nodo.frezzers, nodo.cells, kakaroto=[nodo.showKakaroto()[0],nodo.showKakaroto()[1] - 1], padre=nodo)
+        if nodo_aux.comparar_posicion():
+            if nodo_aux.nodo_puede_devolverse():
+                nodos_posibles.append(nodo_aux)
+        else:
+            nodos_posibles.append(nodo_aux)
+            print("Cell",nodo_aux.showCells())
+            print("Kakaroto",nodo_aux.showKakaroto())
+            print("Costo",nodo_aux.showCosto())
+
+    #5,Si es una semilla, falta poner la logica para la semilla
+    elif columna_nueva >= 0 and mapa[nodo.showKakaroto()[0], columna_nueva] == 5:
+        print("izquierda semilla")
+        print("semillas antes de eliminar", nodo.showSemillas())
+        nodo_aux = Nodo(nodo.costo+1, nodo.eliminarSemilla([nodo.showKakaroto()[0],columna_nueva]), nodo.bolas, nodo.frezzers, nodo.cells, kakaroto=[nodo.showKakaroto()[0],nodo.showKakaroto()[1] - 1], padre=nodo)
+        if nodo_aux.comparar_posicion():
+            if nodo_aux.nodo_puede_devolverse():
+                nodos_posibles.append(nodo_aux)
+        else:
+            nodos_posibles.append(nodo_aux)
+            print("Semillas",nodo_aux.showSemillas())
+            print("Kakaroto",nodo_aux.showKakaroto())
+            print("Costo",nodo_aux.showCosto())
+        nodo.semillas.append([nodo.showKakaroto()[0],columna_nueva])#Se vuelve a agregar al nodo raiz la semilla que fue recolectada por kakaroto para el calculo de las demas posiciones
+
+    #6,Si es una esfera, falta poner la logica para la esfera
+    elif columna_nueva >= 0 and mapa[nodo.showKakaroto()[0], columna_nueva] == 6:
+        print("izquierda esfera")
+        print("bolas antes de eliminar", nodo.showBolas())
+        nodo_aux = Nodo(nodo.costo+1, nodo.semillas, nodo.eliminarBola([nodo.showKakaroto()[0],columna_nueva]), nodo.frezzers, nodo.cells, kakaroto=[nodo.showKakaroto()[0],nodo.showKakaroto()[1] - 1], padre=nodo)
+        if nodo_aux.comparar_posicion():
+            if nodo_aux.nodo_puede_devolverse():
+                nodos_posibles.append(nodo_aux)
+        else:
+            nodos_posibles.append(nodo_aux)
+            print("Esferas",nodo_aux.showBolas())
+            print("Kakaroto",nodo_aux.showKakaroto())
+            print("Costo",nodo_aux.showCosto())
+        nodo.bolas.append([nodo.showKakaroto()[0],columna_nueva])#Se vuelve a agregar al nodo raiz la bola que fue recolectada por kakaroto para el calculo de las demas posiciones
+
+    else:
+        print("no izquierda")
+
+    print("--------")
+    #----------------------derecha----------------
+
+    columna_nueva = nodo.showKakaroto()[1] + 1
+    if columna_nueva < mapa.shape[1] and mapa[nodo.showKakaroto()[0], columna_nueva] == 0:
+        print("derecha espacio vacio")
+        nodo_aux = Nodo(nodo.costo+1, nodo.semillas, nodo.bolas, nodo.frezzers, nodo.cells, kakaroto=[nodo.showKakaroto()[0],nodo.showKakaroto()[1] + 1], padre=nodo)
+        if nodo_aux.comparar_posicion():
+            if nodo_aux.nodo_puede_devolverse():
+                nodos_posibles.append(nodo_aux)
+        else:
+            nodos_posibles.append(nodo_aux)
+            print("Kakaroto",nodo_aux.showKakaroto())
+            print("Costo",nodo_aux.showCosto())
+    
+    #3,Si es un Frezzer
+    elif columna_nueva < mapa.shape[1] and mapa[nodo.showKakaroto()[0], columna_nueva] == 3:
+        print("derecha Frezzer")
+        nodo_aux = Nodo(nodo.costo+4, nodo.semillas, nodo.bolas, nodo.frezzers, nodo.cells, kakaroto=[nodo.showKakaroto()[0],nodo.showKakaroto()[1] + 1], padre=nodo)
+        if nodo_aux.comparar_posicion():
+            if nodo_aux.nodo_puede_devolverse():
+                nodos_posibles.append(nodo_aux)
+        else:
+            nodos_posibles.append(nodo_aux)
+            print("Frezzer",nodo_aux.showFrezzers())
+            print("Kakaroto",nodo_aux.showKakaroto())
+            print("Costo",nodo_aux.showCosto())
+
+    #4,Si es un Cell
+    elif columna_nueva < mapa.shape[1] and mapa[nodo.showKakaroto()[0], columna_nueva] == 4:
+        print("derecha Cell")
+        nodo_aux = Nodo(nodo.costo+7, nodo.semillas, nodo.bolas, nodo.frezzers, nodo.cells, kakaroto=[nodo.showKakaroto()[0],nodo.showKakaroto()[1] + 1], padre=nodo)
+        if nodo_aux.comparar_posicion():
+            if nodo_aux.nodo_puede_devolverse():
+                nodos_posibles.append(nodo_aux)
+        else:
+            nodos_posibles.append(nodo_aux)
+            print("Cell",nodo_aux.showCells())
+            print("Kakaroto",nodo_aux.showKakaroto())
+            print("Costo",nodo_aux.showCosto())
+
+    #5,Si es una semilla, falta poner la logica para la semilla
+    elif columna_nueva < mapa.shape[1] and mapa[nodo.showKakaroto()[0], columna_nueva] == 5:
+        print("derecha semilla")
+        print("semillas antes de eliminar", nodo.showSemillas())
+        nodo_aux = Nodo(nodo.costo+1, nodo.eliminarSemilla([nodo.showKakaroto()[0],columna_nueva]), nodo.bolas, nodo.frezzers, nodo.cells, kakaroto=[nodo.showKakaroto()[0],nodo.showKakaroto()[1] + 1], padre=nodo)
+        if nodo_aux.comparar_posicion():
+            if nodo_aux.nodo_puede_devolverse():
+                nodos_posibles.append(nodo_aux)
+        else:
+            nodos_posibles.append(nodo_aux)
+            print("Semillas",nodo_aux.showSemillas())
+            print("Kakaroto",nodo_aux.showKakaroto())
+            print("Costo",nodo_aux.showCosto())
+        nodo.semillas.append([nodo.showKakaroto()[0],columna_nueva])#Se vuelve a agregar al nodo raiz la semilla que fue recolectada por kakaroto para el calculo de las demas posiciones
+
+    #6,Si es una esfera, falta poner la logica para la esfera
+    elif columna_nueva < mapa.shape[1] and mapa[nodo.showKakaroto()[0], columna_nueva] == 6:
+        print("derecha esfera")
+        print("bolas antes de eliminar", nodo.showBolas())
+        nodo_aux = Nodo(nodo.costo+1, nodo.semillas, nodo.eliminarBola([nodo.showKakaroto()[0],columna_nueva]), nodo.frezzers, nodo.cells, kakaroto=[nodo.showKakaroto()[0],nodo.showKakaroto()[1] + 1], padre=nodo)
+        if nodo_aux.comparar_posicion():
+            if nodo_aux.nodo_puede_devolverse():
+                nodos_posibles.append(nodo_aux)
+        else:
+            nodos_posibles.append(nodo_aux)
+            print("Esferas",nodo_aux.showBolas())
+            print("Kakaroto",nodo_aux.showKakaroto())
+            print("Costo",nodo_aux.showCosto())
+        nodo.bolas.append([nodo.showKakaroto()[0],columna_nueva])#Se vuelve a agregar al nodo raiz la bola que fue recolectada por kakaroto para el calculo de las demas posiciones
+    else:
+        print("no derecha")
+
+    print("--------")
+    print("posicion de los nodos:")
+    for node in nodos_posibles:
+        print(node.showKakaroto())
+    
+    return nodos_posibles
+
 
 #funcion que le pregunta al usuario que algoritmo desea ejecutar
 def escogerAlgoritmo():
@@ -302,6 +644,8 @@ def movement_rata(matriz):
 """
 # llamdo de la funcion que obtiene las posiciones iniciales de los elementos
 kakaroto,freezers,cells,seeds,balls = find_initial_positions(board)
+
+puede_moverse(nodo_raiz)
 
 #funcion que se encarga de expandir un nodo
 

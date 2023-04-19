@@ -52,8 +52,27 @@ class Nodo:
     def showProfundidad(self):
         return self.profundidad
     
-    def same_state(self):
-        if self.bolas == self.padre.bolas and self.frezzers == self.padre.freezers and self.cells == self.padre.cells and self.semillas == self.padre.semillas:
+    def nodo_puede_devolverse(self):
+        if self.padre==None:
+            return True
+        elif self.bolas != self.padre.bolas or self.frezzers != self.padre.freezers or self.cells != self.padre.cells or self.semillas != self.padre.semillas:
             return True
         else:
             return False
+
+
+    def comparar_posicion(self):
+        if self.padre==None:
+            return True
+        elif self.showKakaroto == self.padre.showKakaroto():
+            return True
+        else:
+            return False
+
+    def eliminarSemilla(self, semilla):
+        self.semillas.remove(semilla)
+        return self.semillas
+
+    def eliminarBola(self, bola):
+        self.bolas.remove(bola)
+        return self.bolas

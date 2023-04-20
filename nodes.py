@@ -23,7 +23,7 @@ class Nodo:
         return nodos_recorridos
     
     def esMeta(self):
-        if len(self.bolas) == 2:
+        if len(self.bolas) == 0:
             return True
         else:
             return False    
@@ -59,7 +59,6 @@ class Nodo:
             return True
         else:
             return False
-
 
     def comparar_posicion(self):
         if self.padre==None:

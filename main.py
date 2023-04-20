@@ -10,16 +10,34 @@ info = archivo.readlines()
 #print(info)
 archivo.close()
 
+#funcion que le pregunta al usuario que algoritmo desea ejecutar
+def escogerAlgoritmo():
+    choice = input("ingrese el nombre del algoritmo de busqueda que desee ejecutar (costo, amplitud, profundidad, nombre, nombre):")
+    if choice == "costo":
+        return choice
+    elif choice == "amplitud":
+        return choice
+    elif choice == "profundidad":
+        return choice
+    elif choice == "nombre":
+        return choice
+    elif choice == "nombre":
+        return choice
+    else:
+        print("escoja un algoritmo de busqueda valido")
+        sys.exit()
+
+#__________________________________________definicion de variables globales
+
+algoritmo = escogerAlgoritmo()
+solucion = True
 #Se crea una matriz de 10x10
 mapa = np.zeros((10, 10), dtype=int)
-
 #Creamos un nodo unicial, en donde se guardara el estado inicial
 nodo_raiz= Nodo(costo=0, semillas=[], bolas=[], frezzers=[], cells=[], kakaroto=[])
-
-print("nodo_raiz",nodo_raiz.showKakaroto())
-
 cola = [] #se guardaran los nodos en este array
 board = []
+
 for i in info:
     fila = i.split()
     for h in range(len(fila)):
@@ -62,6 +80,7 @@ def find_initial_positions(board):
     nodo_raiz.cells=cells
     nodo_raiz.kakaroto=kakaroto
     print("mapa:",mapa)
+    print('board:', board)
     print("despues:")
     print("Semillas",nodo_raiz.showSemillas())
     print("Bolas",nodo_raiz.showBolas())
@@ -69,6 +88,7 @@ def find_initial_positions(board):
     print("Cells",nodo_raiz.showCells())
     print("Kakaroto",nodo_raiz.showKakaroto())
     print("----------------")
+    cola.append(nodo_raiz)
     return goku,freezers,cells,seeds,balls
 
 def puede_moverse(nodo):
@@ -166,7 +186,7 @@ def puede_moverse(nodo):
 
 #***
     #3,Si es un Frezzer
-    elif fila_nueva >= 0 and mapa[fila_nueva, nodo.showKakaroto()[1]] == 3:
+    elif fila_nueva < 0 and mapa[fila_nueva, nodo.showKakaroto()[1]] == 3:
         print("abajo Frezzer")
         nodo_aux = Nodo(nodo.costo+4, nodo.semillas, nodo.bolas, nodo.frezzers, nodo.cells, kakaroto=[nodo.showKakaroto()[0]+1,nodo.showKakaroto()[1]], padre=nodo)
         if nodo_aux.comparar_posicion():
@@ -179,7 +199,7 @@ def puede_moverse(nodo):
             print("Costo",nodo_aux.showCosto())
     
     #4,Si es un Cell
-    elif fila_nueva >= 0 and mapa[fila_nueva, nodo.showKakaroto()[1]] == 4:
+    elif fila_nueva < 0 and mapa[fila_nueva, nodo.showKakaroto()[1]] == 4:
         print("abajo Cell")
         nodo_aux = Nodo(nodo.costo+7, nodo.semillas, nodo.bolas, nodo.frezzers, nodo.cells, kakaroto=[nodo.showKakaroto()[0]+1,nodo.showKakaroto()[1]], padre=nodo)
         if nodo_aux.comparar_posicion():
@@ -192,7 +212,7 @@ def puede_moverse(nodo):
             print("Costo",nodo_aux.showCosto())
 
     #5,Si es una semilla, falta poner la logica para la semilla
-    elif fila_nueva >= 0 and mapa[fila_nueva, nodo.showKakaroto()[1]] == 5:
+    elif fila_nueva < 0 and mapa[fila_nueva, nodo.showKakaroto()[1]] == 5:
         print("abajo semilla")
         print("semillas antes de eliminar",nodo.showSemillas())
         nodo_aux = Nodo(nodo.costo+1, nodo.eliminarSemilla([fila_nueva,nodo.showKakaroto()[1]]), nodo.bolas, nodo.frezzers, nodo.cells, kakaroto=[nodo.showKakaroto()[0]+1,nodo.showKakaroto()[1]], padre=nodo)
@@ -208,7 +228,7 @@ def puede_moverse(nodo):
         nodo.semillas.append([fila_nueva,nodo.showKakaroto()[1]])#Se vuelve a agregar al nodo raiz la semilla que fue recolectada por kakaroto para el calculo de las demas posiciones
 
     #6,Si es una esfera, falta poner la logica para la esfera
-    elif fila_nueva >= 0 and mapa[fila_nueva, nodo.showKakaroto()[1]] == 6:
+    elif fila_nueva < 0 and mapa[fila_nueva, nodo.showKakaroto()[1]] == 6:
         print("abajo esfera")
         print("bolas antes de eliminar",nodo.showBolas())
         nodo_aux = Nodo(nodo.costo+1, nodo.semillas, nodo.eliminarBola([fila_nueva,nodo.showKakaroto()[1]]), nodo.frezzers, nodo.cells, kakaroto=[nodo.showKakaroto()[0]+1,nodo.showKakaroto()[1]], padre=nodo)
@@ -377,26 +397,13 @@ def puede_moverse(nodo):
     print("posicion de los nodos:")
     for node in nodos_posibles:
         print(node.showKakaroto())
-    
+    print('profundidad del nodo:',nodos_posibles[0].showProfundidad())
+
+    print("----FINAL----")
+
+
     return nodos_posibles
 
-
-#funcion que le pregunta al usuario que algoritmo desea ejecutar
-def escogerAlgoritmo():
-    choice = input("ingrese el nombre del algoritmo de busqueda que desee ejecutar (costo, amplitud, profundidad, nombre, nombre):")
-    if choice == "costo":
-        return choice
-    elif choice == "amplitud":
-        return choice
-    elif choice == "profundidad":
-        return choice
-    elif choice == "nombre":
-        return choice
-    elif choice == "nombre":
-        return choice
-    else:
-        print("escoja un algoritmo de busqueda valido")
-        sys.exit()
 """
 def movements_table (sensores, hq):
     left_sen = sensores[0]
@@ -648,15 +655,19 @@ kakaroto,freezers,cells,seeds,balls = find_initial_positions(board)
 puede_moverse(nodo_raiz)
 
 #funcion que se encarga de expandir un nodo
+def gestionarNodos(nodos):
+    for i in nodos:
+        agregarNodoCola(i)
 
 def expandirNodo(nodo):
     if nodo.esMeta():
-        pass    #aqui se debe detener la busqueda y devolver el camino de la solucion
+        solucion = False
+        print("posicion final goku:",nodo.showKakaroto())
+           #aqui se debe detener la busqueda y devolver el camino de la solucion
     else:
+        gestionarNodos(puede_moverse(nodo))
         #costo,semillas,etc = funcionAcciones(nodo)
         #nuevoNodo=Nodo(costo,semillas,etc)
-        nuevoNodo=Nodo(1,0,[0],0,0,[goku],nodoInicial,"izquierda")
-        agregarNodoCola(nuevoNodo)
         #print(nuevoNodo.recorrer_arbol_arriba()) se muestra lista con los dos nodos creados
             #aqui se debe llamar a la funcion que genera los hijos del nodo y meterlos en la cola de nodos
 
@@ -674,14 +685,43 @@ def expandirCola():
         pass
 
 def crearNodos():
-    expandirCola()
-    #while True:        #aqui va la logica de crear todos los nodos
+    while solucion:   
+        expandirCola()     #aqui va la logica de crear todos los nodos
         #pass    
 
-#__________________________________________definicion de variables globales
+# funcion que le ingresa la lista de movimientos y actualiza la posicion de goku
+# 1 = izquierda
+# 2 = arriba
+# 3 = derecha
+# 4 = abajo
 
-algoritmo =escogerAlgoritmo()
+def moverGoku(lista):
+    for i in lista:
+        if i == 1:
+            goku.update(col = goku['col'] - 1) # falta hacer que se vay pintando por iteracion
+        elif i == 2:
+            goku.update(row = goku['row'] + 1)
+        elif i == 3:
+            goku.update(col = goku['col'] + 1)
+        elif i == 4:
+            goku.update(row = goku['row'] - 1)
 
+def agregarNodoCola(nodo):
+    if algoritmo == "costo":
+        cola.append(nodo) #agrega el nodo al final de la cola pero da igual el orden revisar si optimizamos esto
+    elif algoritmo == "amplitud":
+        cola.append(nodo) #agrega el nodo al final de la cola
+    elif algoritmo == "profundidad":
+        cola.insert(0,nodo) #agrega el nodo al principio de la cola
+    elif algoritmo == "nombre":
+        pass
+    elif algoritmo == "nombre":
+        pass
+
+expandirNodo(nodo_raiz)
+print('puta, que rika cola:', cola)
+print('primero: ',cola[0].showKakaroto())
+print('segundo: ',cola[1].showKakaroto())
 #__________________________________________llamadas y definiciones de funciones que pintan la GUI
 #------------
 goku = {"row":kakaroto[0][1], "col":kakaroto[0][0]}
@@ -731,35 +771,6 @@ def pintar_juego():
     #pintar a goku
     screen.blit(gokuImg, ((goku.get('row')*imgsize),(goku.get('col')*imgsize)))
 
-# funcion que le ingresa la lista de movimientos y actualiza la posicion de goku
-# 1 = izquierda
-# 2 = arriba
-# 3 = derecha
-# 4 = abajo
-
-def moverGoku(lista):
-    for i in lista:
-        if i == 1:
-            goku.update(col = goku['col'] - 1) # falta hacer que se vay pintando por iteracion
-        elif i == 2:
-            goku.update(row = goku['row'] + 1)
-        elif i == 3:
-            goku.update(col = goku['col'] + 1)
-        elif i == 4:
-            goku.update(row = goku['row'] - 1)
-
-def agregarNodoCola(nodo):
-    if algoritmo == "costo":
-        cola.append(nodo) #agrega el nodo al final de la cola pero da igual el orden revisar si optimizamos esto
-    elif algoritmo == "amplitud":
-        cola.append(nodo) #agrega el nodo al final de la cola
-    elif algoritmo == "profundidad":
-        cola.insert(0,nodo) #agrega el nodo al principio de la cola
-    elif algoritmo == "nombre":
-        pass
-    elif algoritmo == "nombre":
-        pass
-
 #se inicia la aplicacion
 pygame.init()
 
@@ -790,10 +801,7 @@ size = (aux1,aux2)
 screen = pygame.display.set_mode(size)
 
 #generar la solucion del algoritmo inicial
-
-nodoInicial = Nodo(0,0,[0],0,0,0) #nodo raiz
-agregarNodoCola(nodoInicial) #agrega la raiz a la cola
-crearNodos() #expande la cola o sea saca el primer elemento y encuentra todos los nodos
+crearNodos()
 pintar_juego() #pinta el tablero
 
 #while para la logica o los eventos
@@ -803,9 +811,9 @@ movimientoGoku = [3,3,3,3,3,3,3,4,4,4,4,4] # se deben de ingresar la lista de lo
 while True:
     tiempo = math.floor(pygame.time.get_ticks()/1000)
     if tiempo == auxiliar:
-        if(auxiliar > len(movimientoGoku)): #se termina el juego cuando goku realizo todos los movimientos
-            sys.exit()
-        moverGoku(movimientoGoku[auxiliar-1:auxiliar]) #se le ingresa de 1 en 1 los valores en movimientoGoku
+        #if(auxiliar > len(movimientoGoku)): #se termina el juego cuando goku realizo todos los movimientos
+            #sys.exit()
+        #moverGoku(movimientoGoku[auxiliar-1:auxiliar]) #se le ingresa de 1 en 1 los valores en movimientoGoku
         pintar_juego()          # Se debe de modificar esta funcion para pintar los valores que se le ingresan
                                 # el goku mata un freezer entonces debe de borrarse 
         auxiliar = auxiliar+1

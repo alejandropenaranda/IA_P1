@@ -1,10 +1,10 @@
 class Nodo:
-    def __init__(self,costo,semillas,bolas,frezzers,cells,kakaroto,padre=None,operador=None):
+    def __init__(self,costo,semillas,bolas,freezers,cells,kakaroto,padre=None,operador=None):
         self.costo = costo
         self.padre = padre
         self.operador = operador # operador utilizado para que goku llegara a esta posicion
         self.bolas = bolas
-        self.frezzers = frezzers
+        self.freezers = freezers
         self.cells = cells
         self.kakaroto = kakaroto # posicion actual del goku
         self.semillas = semillas
@@ -37,8 +37,8 @@ class Nodo:
     def showBolas(self):
         return self.bolas
     
-    def showFrezzers(self):
-        return self.frezzers
+    def showFreezers(self):
+        return self.freezers
     
     def showCells(self):
         return self.cells
@@ -55,7 +55,9 @@ class Nodo:
     def nodo_puede_devolverse(self):
         if self.padre==None:
             return True
-        elif self.bolas != self.padre.bolas or self.frezzers != self.padre.freezers or self.cells != self.padre.cells or self.semillas != self.padre.semillas:
+        elif self.padre.padre == None:
+            return True
+        elif self.bolas != self.padre.padre.bolas or self.freezers != self.padre.padre.freezers or self.cells != self.padre.padre.cells or self.semillas != self.padre.padre.semillas:
             return True
         else:
             return False
@@ -63,7 +65,9 @@ class Nodo:
     def comparar_posicion(self):
         if self.padre==None:
             return True
-        elif self.showKakaroto == self.padre.showKakaroto():
+        elif self.padre.padre == None:
+            return True
+        elif self.showKakaroto() == self.padre.padre.showKakaroto():
             return True
         else:
             return False

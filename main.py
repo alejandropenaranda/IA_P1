@@ -31,8 +31,7 @@ def escogerAlgoritmo():
 
 algoritmo = escogerAlgoritmo()
 solucion  = []
-#Se crea una matriz de 10x10
-mapa = np.zeros((6, 6), dtype=int)
+
 #Creamos un nodo unicial, en donde se guardara el estado inicial
 nodo_raiz= Nodo(costo=0, semillas=[], bolas=[], freezers=[], cells=[], kakaroto=[])
 cola = [] #se guardaran los nodos en este array
@@ -45,6 +44,8 @@ for i in info:
         fila[h] = int(fila[h])
     board.append(fila)
 
+#Se crea una matriz de 10x10
+mapa = np.zeros((10, 10), dtype=int)
 #funcion que encuentra la posicion inicial de todos los elementos del tablero
 
 def find_initial_positions(board):
@@ -561,118 +562,12 @@ def puede_moverse(nodo):
     for node in nodos_posibles:
         print(node.showKakaroto())
         print(count,"Array Bolas:",node.showBolas())
-    print('profundidad del nodo:',nodos_posibles[0].showProfundidad())
+    #print('profundidad del nodo:',nodos_posibles[0].showProfundidad())
 
     print("----FINAL----")
 
 
     return nodos_posibles
-
-"""
-def movements_table (sensores, hq):
-    left_sen = sensores[0]
-    right_sen = sensores[1]
-    down_sen = sensores[2]
-    up_sen = sensores[3]
-
-    # the movements will be represented by numbers  1 = up, 2 = left, 3 = down, 4 = right
-    # when the mouse found the cheese, this will be represented by the number 5 = found cheese
-    # when any sensor is true, it means that the mouse can go in that direction, otherwise he cant (false)
-    action = 0
-    if hq:
-        action = 5
-        return action
-    elif (left_sen and up_sen and right_sen and down_sen and hq == False): 
-        action = 1
-        return action
-    
-    elif (left_sen and up_sen and right_sen and down_sen == False and hq == False): 
-        action = 1
-        return action
-    
-    elif (left_sen and up_sen and right_sen == False and down_sen and hq == False): 
-        action = 1
-        return action
-    
-    elif (left_sen and up_sen and right_sen == False and down_sen == False and hq == False): 
-        action = 1
-        return action
-    
-    elif (left_sen and up_sen == False  and right_sen and down_sen and hq == False): 
-        action = 2
-        return action
-    
-    elif (left_sen and up_sen == False and right_sen and down_sen == False and hq == False): 
-        action = 4
-        return action
-    
-    elif (left_sen and up_sen == False and right_sen == False and down_sen and hq == False): 
-        action = 2
-        return action
-    
-    elif (left_sen and up_sen == False and right_sen == False and down_sen == False and hq == False): 
-        action = 2
-        return action
-    
-    elif (left_sen == False and up_sen and right_sen and down_sen and hq == False): 
-        action = 1
-        return action
-    
-    elif (left_sen == False and up_sen and right_sen and down_sen == False and hq == False): 
-        action = 4
-        return action
-
-    elif (left_sen == False and up_sen and right_sen == False and down_sen and hq == False): 
-        action = 3
-        return action
-    
-    elif (left_sen == False and up_sen and right_sen == False and down_sen == False and hq == False): 
-        action = 1
-        return action
-
-    elif (left_sen == False and up_sen == False and right_sen and down_sen and hq == False): 
-        action = 4
-        return action
-    
-    elif (left_sen == False and up_sen == False and right_sen and down_sen == False and hq == False): 
-        action = 4
-        return action
-    
-    elif (left_sen == False and up_sen == False and right_sen == False and down_sen and hq == False): 
-        action = 3
-        return action
-"""
-"""
-def huele_queso():
-    if queso == mouse:
-        return True
-    else: 
-        return False
-"""
-"""
-def generate_matrix(n,m):
-    matriz = []
-    for i in range(n):
-        matriz.append([])
-        for h in range(m):
-            if i == mouse.get('y') and h == mouse.get('x'):
-                matriz[i].append(1) 
-            elif i == queso.get('y') and h == queso.get('x'):
-                matriz[i].append(1) 
-    return matriz
-"""
-"""
-#funcion retorna 1 o 0 dependiendo del valor que se genere automaticamente
-#se le da mas posibillidad de devolver 1 para que no hayan muchas paredes
-#1 es un espacio libre para avanzar
-#0 no es un espacio libre
-def wall_generator():
-    numero = random.randint(0,10)
-    if numero == 0 or numero == 8:
-        return 0
-    else:
-        return 1
-"""
 
 #solo funciona para matrices nxn
 
@@ -706,113 +601,6 @@ n = len(board)
 m = len(board)
 print(n)
 #-----------------#
-"""
-def generate_rata():
-    mouse = {'x':0, 'y':0}
-    mouse.update({'x':random.randint(0,n-1), 'y':random.randint(0,m-1)})
-    return  mouse
-"""
-
-"""
-                                    # the movements will be represented by numbers  1 = up, 2 = left, 3 = down, 4 = right
-                                    def move_mouse(action):
-                                    if action == 1:
-                                        mouse.update({'y':mouse.get('y')-1})
-                                    elif action == 2:
-                                        mouse.update({'x':mouse.get('x')-1})
-                                    elif action == 3:
-                                        mouse.update({'y':mouse.get('y')+1})
-                                    elif action == 4:
-                                        mouse.update({'x':mouse.get('x')+1})
-                                    elif action == 5:
-                                        print("huele a queso")
-                                        sys.exit()
-""" 
-"""
-def movement_rata(matriz):
-
-    left_sen = False
-    right_sen = False
-    up_sen = False
-    down_sen = False
-
-    if mouse.get('x') == 0:
-        left_sen = False
-        if mouse.get('y') == 0:
-            up_sen = False  
-            if matriz[mouse.get('y')][mouse.get('x')+1] == 1:
-                right_sen = True
-            if matriz[mouse.get('y')+1][mouse.get('x')] == 1:
-                down_sen = True
-            return [left_sen,right_sen,down_sen,up_sen]
-        elif mouse.get('y') == n-1:
-            down_sen = False
-            if matriz[mouse.get('y')][mouse.get('x')+1] == 1:
-                right_sen = True
-            if matriz[mouse.get('y')-1][mouse.get('x')] == 1:
-                up_sen = True
-            return [left_sen,right_sen,down_sen,up_sen]
-        else:
-            if matriz[mouse.get('y')][mouse.get('x')+1] == 1:
-                right_sen = True
-            if matriz[mouse.get('y')-1][mouse.get('x')] == 1:
-                up_sen = True
-            if matriz[mouse.get('y')+1][mouse.get('x')] == 1:
-                down_sen = True
-            return [left_sen,right_sen,down_sen,up_sen]
-    if mouse.get('x') == n-1:
-        right_sen = False
-        if mouse.get('y') == 0:
-            up_sen = False
-            if matriz[mouse.get('y')][mouse.get('x')-1] == 1:
-                left_sen = True
-            if matriz[mouse.get('y')+1][mouse.get('x')] == 1:
-                down_sen = True
-            return [left_sen,right_sen,down_sen,up_sen]
-        elif mouse.get('y') == n-1:
-            down_sen = False
-            if matriz[mouse.get('y')][mouse.get('x')-1] == 1:
-                left_sen = True
-            if matriz[mouse.get('y')-1][mouse.get('x')] == 1:
-                up_sen = True
-            return [left_sen,right_sen,down_sen,up_sen]
-        else:
-            if matriz[mouse.get('y')][mouse.get('x')-1] == 1:
-                left_sen = True
-            if matriz[mouse.get('y')-1][mouse.get('x')] == 1:
-                up_sen = True
-            if matriz[mouse.get('y')+1][mouse.get('x')] == 1:
-                down_sen = True
-            return [left_sen,right_sen,down_sen,up_sen]
-    if mouse.get('y') == 0:
-        up_sen = False
-        if matriz[mouse.get('y')][mouse.get('x')-1] == 1:
-            left_sen = True
-        if matriz[mouse.get('y')][mouse.get('x')+1] == 1:
-            right_sen = True
-        if matriz[mouse.get('y')+1][mouse.get('x')] == 1:
-            down_sen = True
-        return [left_sen,right_sen,down_sen,up_sen]
-    if mouse.get('y') == n-1:
-        down_sen = False
-        if matriz[mouse.get('y')][mouse.get('x')-1] == 1:
-            left_sen = True
-        if matriz[mouse.get('y')][mouse.get('x')+1] == 1:
-            right_sen = True
-        if matriz[mouse.get('y')-1][mouse.get('x')] == 1:
-            up_sen = True
-        return [left_sen,right_sen,down_sen,up_sen]
-    else:
-        if matriz[mouse.get('y')][mouse.get('x')-1] == 1:
-            left_sen = True
-        if matriz[mouse.get('y')][mouse.get('x')+1] == 1:
-            right_sen = True
-        if matriz[mouse.get('y')-1][mouse.get('x')] == 1:
-            up_sen = True
-        if matriz[mouse.get('y')+1][mouse.get('x')] == 1:
-            down_sen = True
-        return [left_sen,right_sen,down_sen,up_sen]
-"""
 # llamdo de la funcion que obtiene las posiciones iniciales de los elementos
 kakaroto,freezers,cells,seeds,balls = find_initial_positions(board)
 
@@ -824,6 +612,35 @@ def gestionarNodos(nodos):
     print('primero: ',cola[0].showKakaroto())
     #print('segundo: ',cola[1].showKakaroto())
 
+
+#____________________________________________________________________________________________________________
+def iniciarGUI():
+    #se inicia la aplicacion
+    
+    pygame.init()
+    pintar_juego() #pinta el tablero
+
+    #while para la logica o los eventos
+    auxiliar=1
+    movimientoGoku = [3,3,3,3,3,3,3,4,4,4,4,4] # se deben de ingresar la lista de los movimientos de la solucion encontrada
+    while True:
+        tiempo = math.floor(pygame.time.get_ticks()/1000)
+        if tiempo == auxiliar:
+            #if(auxiliar > len(movimientoGoku)): #se termina el juego cuando goku realizo todos los movimientos
+                #sys.exit()
+            moverGoku(movimientoGoku[auxiliar-1:auxiliar]) #se le ingresa de 1 en 1 los valores en movimientoGoku
+            pintar_juego()          # Se debe de modificar esta funcion para pintar los valores que se le ingresan
+                                    # el goku mata un freezer entonces debe de borrarse 
+            auxiliar = auxiliar+1
+        pygame.display.flip()
+        pygame.display.update()
+        
+        for event in pygame.event.get():
+            
+            if event.type == pygame.QUIT:
+                sys.exit()
+#____________________________________________________________________________________________________________
+
 def expandirNodo(nodo):
     if nodo.esMeta():
         #solucion = -1
@@ -832,6 +649,7 @@ def expandirNodo(nodo):
         print("-------------------SOLUCION->",solucion)
         for node in nodo.recorrer_arbol_arriba():
             print("Camino",node.showKakaroto())
+        iniciarGUI()
            #aqui se debe detener la busqueda y devolver el camino de la solucion
     else:
         gestionarNodos(puede_moverse(nodo))
@@ -876,6 +694,8 @@ def moverGoku(lista):
             goku.update(col = goku['col'] + 1)
         elif i == 4:
             goku.update(row = goku['row'] - 1)
+
+
 
 def agregarNodoCola(nodo):
     if algoritmo == "costo":
@@ -940,8 +760,7 @@ def pintar_juego():
     #pintar a goku
     screen.blit(gokuImg, ((goku.get('row')*imgsize),(goku.get('col')*imgsize)))
 
-#se inicia la aplicacion
-pygame.init()
+
 
 #se carga la imagen del raton y demas
 imgsize = 90
@@ -971,25 +790,5 @@ screen = pygame.display.set_mode(size)
 
 #generar la solucion del algoritmo inicial
 crearNodos()
-pintar_juego() #pinta el tablero
 
-#while para la logica o los eventos
 
-auxiliar=1
-movimientoGoku = [3,3,3,3,3,3,3,4,4,4,4,4] # se deben de ingresar la lista de los movimientos de la solucion encontrada
-while True:
-    tiempo = math.floor(pygame.time.get_ticks()/1000)
-    if tiempo == auxiliar:
-        #if(auxiliar > len(movimientoGoku)): #se termina el juego cuando goku realizo todos los movimientos
-            #sys.exit()
-        #moverGoku(movimientoGoku[auxiliar-1:auxiliar]) #se le ingresa de 1 en 1 los valores en movimientoGoku
-        pintar_juego()          # Se debe de modificar esta funcion para pintar los valores que se le ingresan
-                                # el goku mata un freezer entonces debe de borrarse 
-        auxiliar = auxiliar+1
-    pygame.display.flip()
-    pygame.display.update()
-    
-    for event in pygame.event.get():
-        
-        if event.type == pygame.QUIT:
-            sys.exit()

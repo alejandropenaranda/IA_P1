@@ -12,16 +12,16 @@ archivo.close()
 
 #funcion que le pregunta al usuario que algoritmo desea ejecutar
 def escogerAlgoritmo():
-    choice = input("ingrese el nombre del algoritmo de busqueda que desee ejecutar (costo, amplitud, profundidad, nombre, nombre):")
+    choice = input("ingrese el nombre del algoritmo de busqueda que desee ejecutar (costo, amplitud, profundidad, avara, a*):")
     if choice == "costo":
         return choice
     elif choice == "amplitud":
         return choice
     elif choice == "profundidad":
         return choice
-    elif choice == "nombre":
+    elif choice == "avara":
         return choice
-    elif choice == "nombre":
+    elif choice == "a*":
         return choice
     else:
         print("escoja un algoritmo de busqueda valido")
@@ -649,6 +649,7 @@ def expandirNodo(nodo):
         print("-------------------SOLUCION->",solucion)
         for node in nodo.recorrer_arbol_arriba():
             print("Camino",node.showKakaroto())
+        print("Costo: ", nodo.showCosto())
         iniciarGUI()
            #aqui se debe detener la busqueda y devolver el camino de la solucion
     else:
@@ -660,16 +661,28 @@ def expandirNodo(nodo):
 
 def expandirCola():
     if algoritmo == "costo":
-        pass
+        nodo = cola.pop(nodoBarato())  # remueve el nodo que tenga el costo mas bajo
+        expandirNodo(nodo)
     elif algoritmo == "amplitud":
         nodo = cola.pop(0)   #remueve el primer elemento de la cola y lo expande
         expandirNodo(nodo) 
     elif algoritmo == "profundidad":
+        nodo = cola.pop(0)   #remueve el primer elemento de la cola y lo expande
+        expandirNodo(nodo) 
+    elif algoritmo == "avara":
         pass
-    elif algoritmo == "nombre":
+    elif algoritmo == "a*":
         pass
-    elif algoritmo == "nombre":
-        pass
+
+def nodoBarato():
+    menor = cola[0]
+    indice = None
+    for i in range(len(cola)):
+        nuevo_costo = cola[i].showCosto()
+        if menor.showCosto() >= nuevo_costo:
+            menor = cola[i]
+            indice = i
+    return indice
 
 def crearNodos():
     #solucion=25
@@ -704,9 +717,9 @@ def agregarNodoCola(nodo):
         cola.append(nodo) #agrega el nodo al final de la cola
     elif algoritmo == "profundidad":
         cola.insert(0,nodo) #agrega el nodo al principio de la cola
-    elif algoritmo == "nombre":
+    elif algoritmo == "avara":
         pass
-    elif algoritmo == "nombre":
+    elif algoritmo == "a*":
         pass
 
 #expandirNodo(nodo_raiz)

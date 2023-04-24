@@ -1,14 +1,25 @@
-import pygame , sys
-import random
-import math
+import sys
 import numpy as np
 from nodes import Nodo
 
 # Aqui se abre el archivo de texto que contiene el mapa y se guarda en la variable board en forma de matriz
-archivo = open("Prueba1.txt")
-info = archivo.readlines()
-#print(info)
-archivo.close()
+#archivo = open("Prueba1.txt")
+#info = archivo.readlines()
+#print("info:",info)
+#archivo.close()
+
+def crear_mapa_desde_archivo(nombre_archivo):
+    with open(nombre_archivo) as archivo:
+        filas = archivo.readlines()
+        mapa = []
+        for fila in filas:
+            mapa.append([int(x) for x in fila.split()])
+        archivo.close()
+        return np.array(mapa)
+
+mapa = crear_mapa_desde_archivo('Prueba1.txt')
+print(mapa)
+print("len:",range(len(mapa)))
 
 #funcion que le pregunta al usuario que algoritmo desea ejecutar
 def escogerAlgoritmo():
@@ -27,54 +38,49 @@ def escogerAlgoritmo():
         print("escoja un algoritmo de busqueda valido")
         sys.exit()
 
-#__________________________________________definicion de variables globales
+# #__________________________________________definicion de variables globales
 
 algoritmo = escogerAlgoritmo()
 solucion  = []
+camino = []
+nodos_solucion = []
 
-#Creamos un nodo unicial, en donde se guardara el estado inicial
+# #Creamos un nodo unicial, en donde se guardara el estado inicial
 nodo_raiz= Nodo(costo=0, semillas=[], bolas=[], freezers=[], cells=[], kakaroto=[])
 cola = [] #se guardaran los nodos en este array
-board = []
-count = 0
+#board = []
 
-for i in info:
-    fila = i.split()
-    for h in range(len(fila)):
-        fila[h] = int(fila[h])
-    board.append(fila)
+# for i in info:
+#     fila = i.split()
+#     for h in range(len(fila)):
+#         fila[h] = int(fila[h])
+#     board.append(fila)
 
-#Se crea una matriz de 10x10
-mapa = np.zeros((10, 10), dtype=int)
-#funcion que encuentra la posicion inicial de todos los elementos del tablero
+# #Se crea una matriz de 10x10
+#mapa = np.zeros((10, 10), dtype=int)
+# #funcion que encuentra la posicion inicial de todos los elementos del tablero
 
 def find_initial_positions(board):
     freezers = []
     cells = []
     balls = []
     seeds = []
-    goku = []
     kakaroto = None
     for i in range(len(board)):
         for h in range(len(board)):
-            if board[i][h] == 1:
-                mapa[[i],[h]]=1
-            elif board[i][h] == 2:
-                goku.append([i,h])
-                mapa[[i],[h]]=0
+            if mapa[i][h] == 1:
+                print("uwu")
+            elif mapa[i][h] == 2:
                 kakaroto = [i,h]
-            elif board[i][h] == 3:
+                mapa[i][h]=0
+            elif mapa[i][h] == 3:
                 freezers.append([i,h])
-                mapa[[i],[h]]=3
-            elif board[i][h] == 4:
+            elif mapa[i][h] == 4:
                 cells.append([i,h])
-                mapa[[i],[h]]=4
-            elif board[i][h] == 5:
+            elif mapa[i][h] == 5:
                 seeds.append([i,h])
-                mapa[[i],[h]]=5
-            elif board[i][h] == 6:
+            elif mapa[i][h] == 6:
                 balls.append([i,h])
-                mapa[[i],[h]]=6
 
     nodo_raiz.semillas=seeds
     nodo_raiz.bolas=balls
@@ -89,10 +95,12 @@ def find_initial_positions(board):
     print("freezers",nodo_raiz.showFreezers())
     print("Cells",nodo_raiz.showCells())
     print("Kakaroto",nodo_raiz.showKakaroto())
+    print("Kakaroto",kakaroto[0])
+    print("Kakaroto",kakaroto[1])
 
     print("----------------")
     cola.append(nodo_raiz)
-    return goku,freezers,cells,seeds,balls
+    return kakaroto,freezers,cells,seeds,balls
 
 def puede_moverse(nodo):
     print("posicion inicial kakaroto:",nodo.showKakaroto())
@@ -101,7 +109,8 @@ def puede_moverse(nodo):
 
     #----------arriba-------------
     fila_nueva = nodo.showKakaroto()[0] - 1
-
+    print("MAPAAAAAAAAAAAAAAAA",mapa[0][1])
+    print(mapa[fila_nueva][nodo.showKakaroto()[1]])
     #0,Si es un espacio vacio
     if fila_nueva >= 0 and mapa[fila_nueva, nodo.showKakaroto()[1]] == 0:
         print("arriba espacio vacio")
@@ -561,48 +570,16 @@ def puede_moverse(nodo):
 
     for node in nodos_posibles:
         print(node.showKakaroto())
-        print(count,"Array Bolas:",node.showBolas())
+        print("Array Bolas:",node.showBolas())
     #print('profundidad del nodo:',nodos_posibles[0].showProfundidad())
 
     print("----FINAL----")
 
 
     return nodos_posibles
-
-#solo funciona para matrices nxn
-
-#se crea el tablero, nota si se actualiza el tablero se debe de referenciar otra vez ya que no esta en el while del refresco
-def create_board (matriz,size):
-    i = -1 #desplazamiento en las columnas
-    j = 0  #desplazamiento en las filas
-    tamanho = len(matriz) #tamanho de la matriz
-    aux = 0 #corrimiento de los cuadrados
-    for rows in matriz:
-        i = i+1
-        for cells in rows:
-            if (cells == 0):
-                screen.blit(roadImage, ((j*size)+aux,(i*size)+aux))
-            elif(cells == 1):
-                screen.blit(wallImage, ((j*size)+aux,(i*size)+aux))
-            else: 
-                screen.blit(roadImage, ((j*size)+aux,(i*size)+aux))
-            j = j+1
-            if (j==tamanho):
-                j = 0
-                break
-            if (i==tamanho):
-                break
-    return True
-#-----------------
-
-# tamaño de las filas y columnas 
-# debe ser nxn
-n = len(board)
-m = len(board)
-print(n)
 #-----------------#
 # llamdo de la funcion que obtiene las posiciones iniciales de los elementos
-kakaroto,freezers,cells,seeds,balls = find_initial_positions(board)
+kakaroto,freezers,cells,seeds,balls = find_initial_positions(mapa)
 
 #funcion que se encarga de expandir un nodo
 def gestionarNodos(nodos):
@@ -610,36 +587,7 @@ def gestionarNodos(nodos):
         agregarNodoCola(i)
     print('puta, que rika cola:', cola)
     print('primero: ',cola[0].showKakaroto())
-    #print('segundo: ',cola[1].showKakaroto())
-
-
-#____________________________________________________________________________________________________________
-def iniciarGUI():
-    #se inicia la aplicacion
-    
-    pygame.init()
-    pintar_juego() #pinta el tablero
-
-    #while para la logica o los eventos
-    auxiliar=1
-    movimientoGoku = [3,3,3,3,3,3,3,4,4,4,4,4] # se deben de ingresar la lista de los movimientos de la solucion encontrada
-    while True:
-        tiempo = math.floor(pygame.time.get_ticks()/1000)
-        if tiempo == auxiliar:
-            #if(auxiliar > len(movimientoGoku)): #se termina el juego cuando goku realizo todos los movimientos
-                #sys.exit()
-            moverGoku(movimientoGoku[auxiliar-1:auxiliar]) #se le ingresa de 1 en 1 los valores en movimientoGoku
-            pintar_juego()          # Se debe de modificar esta funcion para pintar los valores que se le ingresan
-                                    # el goku mata un freezer entonces debe de borrarse 
-            auxiliar = auxiliar+1
-        pygame.display.flip()
-        pygame.display.update()
-        
-        for event in pygame.event.get():
-            
-            if event.type == pygame.QUIT:
-                sys.exit()
-#____________________________________________________________________________________________________________
+    print('segundo: ',cola[1].showKakaroto())
 
 def expandirNodo(nodo):
     if nodo.esMeta():
@@ -648,10 +596,14 @@ def expandirNodo(nodo):
         print("posicion final goku:",nodo.showKakaroto())
         print("-------------------SOLUCION->",solucion)
         for node in nodo.recorrer_arbol_arriba():
-            print("Camino",node.showKakaroto())
+            #print("Camino",node.showKakaroto())
+            camino.append(node.showKakaroto())              #Verificar si se puede borrar
+            nodos_solucion.append(node)
         print("Costo: ", nodo.showCosto())
-        iniciarGUI()
            #aqui se debe detener la busqueda y devolver el camino de la solucion
+        camino.reverse()
+        nodos_solucion.reverse()
+        print("CAMINO",camino)
     else:
         gestionarNodos(puede_moverse(nodo))
         #costo,semillas,etc = funcionAcciones(nodo)
@@ -691,25 +643,6 @@ def crearNodos():
         expandirCola()     #aqui va la logica de crear todos los nodos
         #pass    
 
-# funcion que le ingresa la lista de movimientos y actualiza la posicion de goku
-# 1 = izquierda
-# 2 = arriba
-# 3 = derecha
-# 4 = abajo
-
-def moverGoku(lista):
-    for i in lista:
-        if i == 1:
-            goku.update(col = goku['col'] - 1) # falta hacer que se vay pintando por iteracion
-        elif i == 2:
-            goku.update(row = goku['row'] + 1)
-        elif i == 3:
-            goku.update(col = goku['col'] + 1)
-        elif i == 4:
-            goku.update(row = goku['row'] - 1)
-
-
-
 def agregarNodoCola(nodo):
     if algoritmo == "costo":
         cola.append(nodo) #agrega el nodo al final de la cola pero da igual el orden revisar si optimizamos esto
@@ -723,83 +656,6 @@ def agregarNodoCola(nodo):
         pass
 
 #expandirNodo(nodo_raiz)
-
-#__________________________________________llamadas y definiciones de funciones que pintan la GUI
-#------------
-goku = {"row":kakaroto[0][1], "col":kakaroto[0][0]}
-
-#------------
-def pintar_freezers(freezers):
-    for i in range(len(freezers)):
-        row = freezers[i][0]
-        col = freezers[i][1]
-        screen.blit(freezerImg, ((col*imgsize),(row*imgsize)))
-def pintar_cells(cells):
-    for i in range(len(cells)):
-        row = cells[i][0]
-        col = cells[i][1]
-        screen.blit(cellImg, ((col*imgsize),(row*imgsize)))
-def pintar_seeds(seeds):
-    for i in range(len(seeds)):
-        row = seeds[i][0]
-        col = seeds[i][1]
-        screen.blit(seedImg, ((col*imgsize),(row*imgsize)))
-def pintar_balls(balls):
-    for i in range(len(balls)):
-        row = balls[i][0]
-        col = balls[i][1]
-        screen.blit(ballImage, ((col*imgsize),(row*imgsize)))
-
-# Comprueba si un nodo que se le ingrese es una meta    
-
-def pintar_juego():
-    #fondo blanco
-    screen.fill(white)
-    #pintar el tablero
-    #create_board(tablero,imgsize)
-    create_board(board,imgsize)
-    #pintar las esferas
-    pintar_balls(balls)
-    #screen.blit(ballImage, ((queso.get('x')*imgsize),(queso.get('y')*imgsize)))
-    #pintar un freezer test
-    pintar_freezers(freezers)
-    #screen.blit(freezerImg, ((2*imgsize),(0*imgsize)))
-    #pintar un cell 
-    pintar_cells(cells)
-    #screen.blit(cellImg, ((2*imgsize),(5*imgsize)))
-    #pintar una semilla
-    pintar_seeds(seeds)
-    #screen.blit(seedImg, ((1*imgsize),(0*imgsize)))
-    #pintar a goku
-    screen.blit(gokuImg, ((goku.get('row')*imgsize),(goku.get('col')*imgsize)))
-
-
-
-#se carga la imagen del raton y demas
-imgsize = 90
-auxsize = 85
-ballImage = pygame.transform.scale(pygame.image.load('imagenes/ball.png'), (auxsize,auxsize))
-roadImage = pygame.image.load('imagenes/path.png')
-wallImage = pygame.image.load('imagenes/muro.png')
-gokuImg =  pygame.transform.scale(pygame.image.load('imagenes/goku.png'), (auxsize,auxsize))
-freezerImg = pygame.transform.scale(pygame.image.load('imagenes/freezer.png'), (auxsize,auxsize))
-cellImg = pygame.transform.scale(pygame.image.load('imagenes/cell.png'), (auxsize,auxsize))
-seedImg = pygame.transform.scale(pygame.image.load('imagenes/semilla.png'), (auxsize,auxsize))
-
-#Definir colores
-black = (0,0,0)
-red = (255,0,0)
-blue = (0,0,255)
-green = (0,255,0)
-white = (255,255,255)
-
-#tamanho de la GUI
-aux1 = n*imgsize
-aux2 = m*imgsize
-size = (aux1,aux2)
-
-#definicion de la GUI
-screen = pygame.display.set_mode(size)
 
 #generar la solucion del algoritmo inicial
 crearNodos()

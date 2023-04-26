@@ -2,6 +2,7 @@ import sys
 import numpy as np
 import time
 from nodes import Nodo
+#Si al intentar expandir un nodo no tiene hijos, es porque esta en un camino sin salida, entonces hay que matar el programa
 
 # Aqui se abre el archivo de texto que contiene el mapa y se guarda en la variable board en forma de matriz
 #archivo = open("Prueba1.txt")
@@ -19,8 +20,8 @@ def crear_mapa_desde_archivo(nombre_archivo):
         return np.array(mapa)
 
 mapa = crear_mapa_desde_archivo('Prueba1.txt')
-#print(mapa)
-#print("len:",range(len(mapa)))
+# print(mapa)
+# print("len:",range(len(mapa)))
 
 #funcion que le pregunta al usuario que algoritmo desea ejecutar
 def escogerAlgoritmo():
@@ -48,7 +49,7 @@ nodos_solucion = []
 tiempo_inicial = time.time()
 tiempo_final = 0
 # #Creamos un nodo unicial, en donde se guardara el estado inicial
-nodo_raiz= Nodo(costo=0, semillas=[], bolas=[], freezers=[], cells=[], kakaroto=[])
+nodo_raiz= Nodo(costo=0, semillas=[],semillas_almacenadas=0, bolas=[], freezers=[], cells=[], kakaroto=[])
 cola = [] #se guardaran los nodos en este array
 #board = []
 
@@ -104,11 +105,57 @@ def find_initial_positions(board):
     cola.append(nodo_raiz)
     return kakaroto,freezers,cells,seeds,balls
 
+def verificar_freezers(nodo, posicion):
+    freezers = nodo.showFreezers().copy()
+    semillas_almacenadas = nodo.showSemillasAlmacenadas()
+    costo = nodo.showCosto()
+    if posicion in nodo.showFreezers():
+        if nodo.showSemillasAlmacenadas()>0:
+            freezers.remove(posicion)
+            semillas_almacenadas = semillas_almacenadas - 1
+            costo = costo+1
+        else:
+            costo = costo+4
+    else:
+        costo = costo+1
+    return freezers, semillas_almacenadas, costo
+
+def verificar_cells(nodo, posicion):
+    cells = nodo.showCells().copy()
+    semillas_almacenadas = nodo.showSemillasAlmacenadas()
+    costo = nodo.showCosto()
+    if posicion in nodo.showCells():
+        if nodo.showSemillasAlmacenadas()>0:
+            cells.remove(posicion)
+            semillas_almacenadas = semillas_almacenadas - 1
+            costo = nodo.showCosto()+1
+        else:
+            costo = nodo.showCosto()+7
+    else:
+        costo = nodo.showCosto()+1
+    return cells, semillas_almacenadas, costo
+
+def verificar_semillas(nodo, posicion):
+    semillas = nodo.showSemillas().copy()
+    semillas_almacenadas = nodo.showSemillasAlmacenadas()
+    if posicion in nodo.showSemillas():
+        semillas.remove(posicion)
+        semillas_almacenadas = semillas_almacenadas + 1
+    return semillas, semillas_almacenadas
+
+def verificar_bolas(nodo, posicion):
+    bolas = nodo.showBolas().copy()
+    if posicion in nodo.showBolas():
+        bolas.remove(posicion)
+    return bolas
+    
 def puede_moverse(nodo):
     print("posicion inicial kakaroto:",nodo.showKakaroto())
     print('valor heuristica:', nodo.heuristica())
     nodos_posibles = []
-    #nodos_recorridos = nodo.recorrer_arbol_arriba()
+    nodos_recorridos = nodo.recorrer_arbol_arriba()
+    for n in nodos_recorridos:
+        print("Camino_principio:",n.showKakaroto())
 
     #----------arriba-------------
     fila_nueva = nodo.showKakaroto()[0] - 1
@@ -117,104 +164,86 @@ def puede_moverse(nodo):
     #0,Si es un espacio vacio
     if fila_nueva >= 0 and mapa[fila_nueva, nodo.showKakaroto()[1]] == 0:
         print("arriba espacio vacio")
-        nodo_aux = Nodo(nodo.costo+1, nodo.semillas, nodo.bolas, nodo.freezers, nodo.cells, kakaroto=[nodo.showKakaroto()[0]-1,nodo.showKakaroto()[1]], padre=nodo)
-        if nodo_aux.comparar_posicion():
-            if nodo_aux.nodo_puede_devolverse():
+        nodo_aux = Nodo(nodo.costo+1, nodo.semillas, nodo.semillas_almacenadas, nodo.bolas, nodo.freezers, nodo.cells, kakaroto=[nodo.showKakaroto()[0]-1,nodo.showKakaroto()[1]],padre=nodo)
+        if algoritmo == "profundidad":
+            if nodo_aux.nodo_valido(nodos_recorridos):
                 nodos_posibles.append(nodo_aux)
                 for node in nodo_aux.recorrer_arbol_arriba():
                     print("Camino",node.showKakaroto())
         else:
-            nodos_posibles.append(nodo_aux)
-            print("Kakaroto",nodo_aux.showKakaroto())
-            for node in nodo_aux.recorrer_arbol_arriba():
-                print("Camino",node.showKakaroto())
-            print("Costo",nodo_aux.showCosto())
+            if nodo_aux.comparar_posicion():
+                if nodo_aux.nodo_puede_devolverse():
+                    nodos_posibles.append(nodo_aux)
+            else:
+                nodos_posibles.append(nodo_aux)
 
     #3,Si es un Frezzer
     elif fila_nueva >= 0 and mapa[fila_nueva, nodo.showKakaroto()[1]] == 3:
         print("arriba Frezzer")
-        nodo_aux = Nodo(nodo.costo+4, nodo.semillas, nodo.bolas, nodo.freezers, nodo.cells, kakaroto=[nodo.showKakaroto()[0]-1,nodo.showKakaroto()[1]], padre=nodo)
-        if nodo_aux.comparar_posicion():
-            if nodo_aux.nodo_puede_devolverse():
+        freezers, semillas_almacenadas, costo = verificar_freezers(nodo,[fila_nueva, nodo.showKakaroto()[1]])
+        nodo_aux = Nodo(costo, nodo.semillas, semillas_almacenadas, nodo.bolas, freezers, nodo.cells,kakaroto=[nodo.showKakaroto()[0]-1,nodo.showKakaroto()[1]], padre=nodo)
+        if algoritmo == "profundidad":
+            if nodo_aux.nodo_valido(nodos_recorridos):
                 nodos_posibles.append(nodo_aux)
                 for node in nodo_aux.recorrer_arbol_arriba():
                     print("Camino",node.showKakaroto())
         else:
-            nodos_posibles.append(nodo_aux)
-            print("Frezzer",nodo_aux.showFreezers())
-            print("Kakaroto",nodo_aux.showKakaroto())
-            for node in nodo_aux.recorrer_arbol_arriba():
-                print("Camino",node.showKakaroto())
-            print("Costo",nodo_aux.showCosto())
+            if nodo_aux.comparar_posicion():
+                if nodo_aux.nodo_puede_devolverse():
+                    nodos_posibles.append(nodo_aux)
+            else:
+                nodos_posibles.append(nodo_aux)
     
     #4,Si es un Cell
     elif fila_nueva >= 0 and mapa[fila_nueva, nodo.showKakaroto()[1]] == 4:
         print("arriba Cell")
-        nodo_aux = Nodo(nodo.costo+7, nodo.semillas, nodo.bolas, nodo.freezers, nodo.cells, kakaroto=[nodo.showKakaroto()[0]-1,nodo.showKakaroto()[1]], padre=nodo)
-        if nodo_aux.comparar_posicion():
-            if nodo_aux.nodo_puede_devolverse():
+        cells, semillas_almacenadas, costo = verificar_cells(nodo,[fila_nueva, nodo.showKakaroto()[1]])
+        nodo_aux = Nodo(costo, nodo.semillas, semillas_almacenadas, nodo.bolas, nodo.freezers, cells,kakaroto=[nodo.showKakaroto()[0]-1,nodo.showKakaroto()[1]], padre=nodo)
+        if algoritmo == "profundidad":
+            if nodo_aux.nodo_valido(nodos_recorridos):
                 nodos_posibles.append(nodo_aux)
                 for node in nodo_aux.recorrer_arbol_arriba():
                     print("Camino",node.showKakaroto())
         else:
-            nodos_posibles.append(nodo_aux)
-            print("Cell",nodo_aux.showCells())
-            print("Kakaroto",nodo_aux.showKakaroto())
-            for node in nodo_aux.recorrer_arbol_arriba():
-                print("Camino",node.showKakaroto())
-            print("Costo",nodo_aux.showCosto())
+            if nodo_aux.comparar_posicion():
+                if nodo_aux.nodo_puede_devolverse():
+                    nodos_posibles.append(nodo_aux)
+            else:
+                nodos_posibles.append(nodo_aux)
 
     #5,Si es una semilla, falta poner la logica para la semilla
     elif fila_nueva >= 0 and mapa[fila_nueva, nodo.showKakaroto()[1]] == 5:
-        semillas = nodo.showSemillas().copy()
-        if [fila_nueva, nodo.showKakaroto()[1]] in nodo.showSemillas():
-            print("arriba Semilla")
-            print("semillas antes de eliminar", nodo.showSemillas())
-            semillas.remove([fila_nueva,nodo.showKakaroto()[1]])
-        nodo_aux = Nodo(nodo.costo+1, semillas, nodo.bolas, nodo.freezers, nodo.cells, kakaroto=[nodo.showKakaroto()[0]-1,nodo.showKakaroto()[1]], padre=nodo)
-        if nodo_aux.comparar_posicion():
-            if nodo_aux.nodo_puede_devolverse():
+        semillas, semillas_almacenadas = verificar_semillas(nodo, [fila_nueva, nodo.showKakaroto()[1]])
+        nodo_aux = Nodo(nodo.costo+1, semillas, semillas_almacenadas, nodo.bolas, nodo.freezers, nodo.cells,kakaroto=[nodo.showKakaroto()[0]-1,nodo.showKakaroto()[1]], padre=nodo)
+        if algoritmo == "profundidad":
+            if nodo_aux.nodo_valido(nodos_recorridos):
                 nodos_posibles.append(nodo_aux)
-                print("Semillas",nodo_aux.showSemillas())
-                print("Kakaroto",nodo_aux.showKakaroto())
                 for node in nodo_aux.recorrer_arbol_arriba():
                     print("Camino",node.showKakaroto())
-                print("Costo",nodo_aux.showCosto())
         else:
-            nodos_posibles.append(nodo_aux)
-            print("Semillas",nodo_aux.showSemillas())
-            print("Kakaroto",nodo_aux.showKakaroto())
-            for node in nodo_aux.recorrer_arbol_arriba():
-                print("Camino",node.showKakaroto())
-            print("Costo",nodo_aux.showCosto())
-        #nodo.semillas.append([fila_nueva,nodo.showKakaroto()[1]])#Se vuelve a agregar al nodo raiz la semilla que fue recolectada por kakaroto para el calculo de las demas posiciones
+            if nodo_aux.comparar_posicion():
+                if nodo_aux.nodo_puede_devolverse():
+                    nodos_posibles.append(nodo_aux)
+            else:
+                nodos_posibles.append(nodo_aux)
 
             
 
     #6,Si es una esfera, falta poner la logica para la esfera
     elif fila_nueva >= 0 and mapa[fila_nueva, nodo.showKakaroto()[1]] == 6:
-        bolas = nodo.showBolas().copy()
-        if [fila_nueva, nodo.showKakaroto()[1]] in nodo.showBolas():
-            print("arriba esfera")
-            print("bolas antes de eliminar", nodo.showBolas())
-            bolas.remove([fila_nueva,nodo.showKakaroto()[1]])
-        nodo_aux = Nodo(nodo.costo+1, nodo.semillas, bolas, nodo.freezers, nodo.cells, kakaroto=[nodo.showKakaroto()[0]-1,nodo.showKakaroto()[1]], padre=nodo)
-        if nodo_aux.comparar_posicion():
-            if nodo_aux.nodo_puede_devolverse():
+        bolas = verificar_bolas(nodo, [fila_nueva, nodo.showKakaroto()[1]])
+        nodo_aux = Nodo(nodo.costo+1, nodo.semillas, nodo.semillas_almacenadas, bolas, nodo.freezers, nodo.cells, kakaroto=[nodo.showKakaroto()[0]-1,nodo.showKakaroto()[1]], padre=nodo)
+        if algoritmo == "profundidad":
+            if nodo_aux.nodo_valido(nodos_recorridos):
                 nodos_posibles.append(nodo_aux)
-                print("Esferas",nodo_aux.showBolas())
-                print("Kakaroto",nodo_aux.showKakaroto())
                 for node in nodo_aux.recorrer_arbol_arriba():
                     print("Camino",node.showKakaroto())
-                print("Costo",nodo_aux.showCosto())
         else:
-            nodos_posibles.append(nodo_aux)
-            print("Esferas",nodo_aux.showBolas())
-            print("Kakaroto",nodo_aux.showKakaroto())
-            for node in nodo_aux.recorrer_arbol_arriba():
-                print("Camino",node.showKakaroto())
-            print("Costo",nodo_aux.showCosto())
-        #nodo.bolas.append([fila_nueva,nodo.showKakaroto()[1]])#Se vuelve a agregar al nodo raiz la bola que fue recolectada por kakaroto para el calculo de las demas posiciones
+            if nodo_aux.comparar_posicion():
+                if nodo_aux.nodo_puede_devolverse():
+                    nodos_posibles.append(nodo_aux)
+            else:
+                nodos_posibles.append(nodo_aux)
     else:
         print("no arriba")
 
@@ -224,104 +253,84 @@ def puede_moverse(nodo):
     columna_nueva = nodo.showKakaroto()[1] - 1
     if columna_nueva >= 0 and mapa[nodo.showKakaroto()[0], columna_nueva] == 0:
         print("izquierda espacio vacio")
-        nodo_aux = Nodo(nodo.costo+1, nodo.semillas, nodo.bolas, nodo.freezers, nodo.cells, kakaroto=[nodo.showKakaroto()[0],nodo.showKakaroto()[1] - 1], padre=nodo)
-        if nodo_aux.comparar_posicion():
-            if nodo_aux.nodo_puede_devolverse():
+        nodo_aux = Nodo(nodo.costo+1, nodo.semillas, nodo.semillas_almacenadas, nodo.bolas, nodo.freezers, nodo.cells, kakaroto=[nodo.showKakaroto()[0],nodo.showKakaroto()[1] - 1], padre=nodo)
+        if algoritmo == "profundidad":
+            if nodo_aux.nodo_valido(nodos_recorridos):
                 nodos_posibles.append(nodo_aux)
                 for node in nodo_aux.recorrer_arbol_arriba():
                     print("Camino",node.showKakaroto())
         else:
-            nodos_posibles.append(nodo_aux)
-            print("Kakaroto",nodo_aux.showKakaroto())
-            for node in nodo_aux.recorrer_arbol_arriba():
-                print("Camino",node.showKakaroto())
-            print("Costo",nodo_aux.showCosto())
+            if nodo_aux.comparar_posicion():
+                if nodo_aux.nodo_puede_devolverse():
+                    nodos_posibles.append(nodo_aux)
+            else:
+                nodos_posibles.append(nodo_aux)
 
     #3,Si es un Frezzer
     elif columna_nueva >= 0 and mapa[nodo.showKakaroto()[0], columna_nueva] == 3:
         print("izquierda Frezzer")
-        nodo_aux = Nodo(nodo.costo+4, nodo.semillas, nodo.bolas, nodo.freezers, nodo.cells, kakaroto=[nodo.showKakaroto()[0],nodo.showKakaroto()[1] - 1], padre=nodo)
-        if nodo_aux.comparar_posicion():
-            if nodo_aux.nodo_puede_devolverse():
+        freezers, semillas_almacenadas, costo = verificar_freezers(nodo,[nodo.showKakaroto()[0], columna_nueva])
+        nodo_aux = Nodo(costo, nodo.semillas, semillas_almacenadas, nodo.bolas, freezers, nodo.cells,kakaroto=[nodo.showKakaroto()[0],nodo.showKakaroto()[1] - 1], padre=nodo)
+        if algoritmo == "profundidad":
+            if nodo_aux.nodo_valido(nodos_recorridos):
                 nodos_posibles.append(nodo_aux)
                 for node in nodo_aux.recorrer_arbol_arriba():
                     print("Camino",node.showKakaroto())
         else:
-            nodos_posibles.append(nodo_aux)
-            print("Frezzer",nodo_aux.showFreezers())
-            print("Kakaroto",nodo_aux.showKakaroto())
-            for node in nodo_aux.recorrer_arbol_arriba():
-                print("Camino",node.showKakaroto())
-            print("Costo",nodo_aux.showCosto())
+            if nodo_aux.comparar_posicion():
+                if nodo_aux.nodo_puede_devolverse():
+                    nodos_posibles.append(nodo_aux)
+            else:
+                nodos_posibles.append(nodo_aux)
 
     #4,Si es un Cell
     elif columna_nueva >= 0 and mapa[nodo.showKakaroto()[0], columna_nueva] == 4:
         print("izquierda Cell")
-        nodo_aux = Nodo(nodo.costo+7, nodo.semillas, nodo.bolas, nodo.freezers, nodo.cells, kakaroto=[nodo.showKakaroto()[0],nodo.showKakaroto()[1] - 1], padre=nodo)
-        if nodo_aux.comparar_posicion():
-            if nodo_aux.nodo_puede_devolverse():
+        cells, semillas_almacenadas, costo = verificar_cells(nodo,[nodo.showKakaroto()[0], columna_nueva])
+        nodo_aux = Nodo(costo, nodo.semillas, semillas_almacenadas, nodo.bolas, nodo.freezers, cells,kakaroto=[nodo.showKakaroto()[0],nodo.showKakaroto()[1] - 1], padre=nodo)
+        if algoritmo == "profundidad":
+            if nodo_aux.nodo_valido(nodos_recorridos):
                 nodos_posibles.append(nodo_aux)
                 for node in nodo_aux.recorrer_arbol_arriba():
                     print("Camino",node.showKakaroto())
         else:
-            nodos_posibles.append(nodo_aux)
-            print("Cell",nodo_aux.showCells())
-            print("Kakaroto",nodo_aux.showKakaroto())
-            for node in nodo_aux.recorrer_arbol_arriba():
-                print("Camino",node.showKakaroto())
-            print("Costo",nodo_aux.showCosto())
+            if nodo_aux.comparar_posicion():
+                if nodo_aux.nodo_puede_devolverse():
+                    nodos_posibles.append(nodo_aux)
+            else:
+                nodos_posibles.append(nodo_aux)
 
     #5,Si es una semilla, falta poner la logica para la semilla
     elif columna_nueva >= 0 and mapa[nodo.showKakaroto()[0], columna_nueva] == 5:
-        semillas = nodo.showSemillas().copy()
-        if [nodo.showKakaroto()[0], columna_nueva] in nodo.showSemillas():
-            print("izquierda semilla")
-            print("semillas antes de eliminar", nodo.showSemillas())
-            semillas.remove([nodo.showKakaroto()[0],columna_nueva])
-        nodo_aux = Nodo(nodo.costo+1, semillas, nodo.bolas, nodo.freezers, nodo.cells, kakaroto=[nodo.showKakaroto()[0],nodo.showKakaroto()[1] - 1], padre=nodo)
-        if nodo_aux.comparar_posicion():
-            if nodo_aux.nodo_puede_devolverse():
+        semillas, semillas_almacenadas = verificar_semillas(nodo,[nodo.showKakaroto()[0], columna_nueva])
+        nodo_aux = Nodo(nodo.costo+1, semillas, semillas_almacenadas,nodo.bolas, nodo.freezers, nodo.cells,kakaroto=[nodo.showKakaroto()[0],nodo.showKakaroto()[1] - 1], padre=nodo)
+        if algoritmo == "profundidad":
+            if nodo_aux.nodo_valido(nodos_recorridos):
                 nodos_posibles.append(nodo_aux)
-                print("Semillas",nodo_aux.showSemillas())
-                print("Kakaroto",nodo_aux.showKakaroto())
                 for node in nodo_aux.recorrer_arbol_arriba():
                     print("Camino",node.showKakaroto())
-                print("Costo",nodo_aux.showCosto())
         else:
-            nodos_posibles.append(nodo_aux)
-            print("Semillas",nodo_aux.showSemillas())
-            print("Kakaroto",nodo_aux.showKakaroto())
-            for node in nodo_aux.recorrer_arbol_arriba():
-                print("Camino",node.showKakaroto())
-            print("Costo",nodo_aux.showCosto())
-            #nodo.semillas.append([nodo.showKakaroto()[0],columna_nueva])#Se vuelve a agregar al nodo raiz la semilla que fue recolectada por kakaroto para el calculo de las demas posiciones
+            if nodo_aux.comparar_posicion():
+                if nodo_aux.nodo_puede_devolverse():
+                    nodos_posibles.append(nodo_aux)
+            else:
+                nodos_posibles.append(nodo_aux)
 
     #6,Si es una esfera, falta poner la logica para la esfera
     elif columna_nueva >= 0 and mapa[nodo.showKakaroto()[0], columna_nueva] == 6:
-        bolas = nodo.showBolas().copy()
-        if [nodo.showKakaroto()[0], columna_nueva] in nodo.showBolas():
-            print("izquierda esfera")
-            print("bolas antes de eliminar", nodo.showBolas()) 
-            bolas.remove([nodo.showKakaroto()[0],columna_nueva])
-        nodo_aux = Nodo(nodo.costo+1, nodo.semillas, bolas, nodo.freezers, nodo.cells, kakaroto=[nodo.showKakaroto()[0],nodo.showKakaroto()[1] - 1], padre=nodo)
-        if nodo_aux.comparar_posicion():
-            if nodo_aux.nodo_puede_devolverse():
+        bolas = verificar_bolas(nodo, [nodo.showKakaroto()[0], columna_nueva])
+        nodo_aux = Nodo(nodo.costo+1, nodo.semillas, nodo.semillas_almacenadas, bolas, nodo.freezers, nodo.cells, kakaroto=[nodo.showKakaroto()[0],nodo.showKakaroto()[1] - 1], padre=nodo)
+        if algoritmo == "profundidad":
+            if nodo_aux.nodo_valido(nodos_recorridos):
                 nodos_posibles.append(nodo_aux)
-                print("Comparacion estado izquierda")
-                print("Esferas",nodo_aux.showBolas())
-                print("Kakaroto",nodo_aux.showKakaroto())
                 for node in nodo_aux.recorrer_arbol_arriba():
                     print("Camino",node.showKakaroto())
-                print("Costo",nodo_aux.showCosto())
         else:
-            nodos_posibles.append(nodo_aux)
-            print("No Comparacion estado izquierda")
-            print("Esferas",nodo_aux.showBolas())
-            print("Kakaroto",nodo_aux.showKakaroto())
-            for node in nodo_aux.recorrer_arbol_arriba():
-                print("Camino",node.showKakaroto())
-            print("Costo",nodo_aux.showCosto())
-        #nodo.bolas.append([nodo.showKakaroto()[0],columna_nueva])#Se vuelve a agregar al nodo raiz la bola que fue recolectada por kakaroto para el calculo de las demas posiciones
+            if nodo_aux.comparar_posicion():
+                if nodo_aux.nodo_puede_devolverse():
+                    nodos_posibles.append(nodo_aux)
+            else:
+                nodos_posibles.append(nodo_aux)
     else:
         print("no izquierda")
 
@@ -331,120 +340,85 @@ def puede_moverse(nodo):
 
     if fila_nueva < mapa.shape[0] and mapa[fila_nueva, nodo.showKakaroto()[1]] == 0:
         print("abajo espacio vacio")
-        nodo_aux = Nodo(nodo.costo+1, nodo.semillas, nodo.bolas, nodo.freezers, nodo.cells, kakaroto=[nodo.showKakaroto()[0]+1,nodo.showKakaroto()[1]], padre=nodo)
-        if nodo_aux.comparar_posicion():
-            if nodo_aux.nodo_puede_devolverse():
+        nodo_aux = Nodo(nodo.costo+1, nodo.semillas, nodo.semillas_almacenadas, nodo.bolas, nodo.freezers, nodo.cells, kakaroto=[nodo.showKakaroto()[0]+1,nodo.showKakaroto()[1]], padre=nodo)
+        if algoritmo == "profundidad":
+            if nodo_aux.nodo_valido(nodos_recorridos):
                 nodos_posibles.append(nodo_aux)
                 for node in nodo_aux.recorrer_arbol_arriba():
                     print("Camino",node.showKakaroto())
         else:
-            nodos_posibles.append(nodo_aux)
-            print("Kakaroto",nodo_aux.showKakaroto())
-            for node in nodo_aux.recorrer_arbol_arriba():
-                print("Camino",node.showKakaroto())
-            print("Costo",nodo_aux.showCosto())
+            if nodo_aux.comparar_posicion():
+                if nodo_aux.nodo_puede_devolverse():
+                    nodos_posibles.append(nodo_aux)
+            else:
+                nodos_posibles.append(nodo_aux)
 
 #***
     #3,Si es un Frezzer
     elif fila_nueva < mapa.shape[0] and mapa[fila_nueva, nodo.showKakaroto()[1]] == 3:
         print("abajo Frezzer")
-        nodo_aux = Nodo(nodo.costo+4, nodo.semillas, nodo.bolas, nodo.freezers, nodo.cells, kakaroto=[nodo.showKakaroto()[0]+1,nodo.showKakaroto()[1]], padre=nodo)
-        if nodo_aux.comparar_posicion():
-            if nodo_aux.nodo_puede_devolverse():
+        freezers, semillas_almacenadas, costo= verificar_freezers(nodo,[fila_nueva, nodo.showKakaroto()[1]])
+        nodo_aux = Nodo(costo, nodo.semillas, semillas_almacenadas, nodo.bolas, freezers, nodo.cells,kakaroto=[nodo.showKakaroto()[0]+1,nodo.showKakaroto()[1]], padre=nodo)
+        if algoritmo == "profundidad":
+            if nodo_aux.nodo_valido(nodos_recorridos):
                 nodos_posibles.append(nodo_aux)
                 for node in nodo_aux.recorrer_arbol_arriba():
                     print("Camino",node.showKakaroto())
         else:
-            nodos_posibles.append(nodo_aux)
-            print("Frezzer",nodo_aux.showFreezers())
-            print("Kakaroto",nodo_aux.showKakaroto())
-            for node in nodo_aux.recorrer_arbol_arriba():
-                print("Camino",node.showKakaroto())
-            print("Costo",nodo_aux.showCosto())
+            if nodo_aux.comparar_posicion():
+                if nodo_aux.nodo_puede_devolverse():
+                    nodos_posibles.append(nodo_aux)
+            else:
+                nodos_posibles.append(nodo_aux)
     
     #4,Si es un Cell
     elif fila_nueva < mapa.shape[0] and mapa[fila_nueva, nodo.showKakaroto()[1]] == 4:
         print("abajo Cell")
-        nodo_aux = Nodo(nodo.costo+7, nodo.semillas, nodo.bolas, nodo.freezers, nodo.cells, kakaroto=[nodo.showKakaroto()[0]+1,nodo.showKakaroto()[1]], padre=nodo)
-        if nodo_aux.comparar_posicion():
-            if nodo_aux.nodo_puede_devolverse():
+        cells, semillas_almacenadas, costo = verificar_cells(nodo,[fila_nueva, nodo.showKakaroto()[1]])
+        nodo_aux = Nodo(costo, nodo.semillas, semillas_almacenadas, nodo.bolas, nodo.freezers, cells,kakaroto=[nodo.showKakaroto()[0]+1,nodo.showKakaroto()[1]], padre=nodo)
+        if algoritmo == "profundidad":
+            if nodo_aux.nodo_valido(nodos_recorridos):
                 nodos_posibles.append(nodo_aux)
                 for node in nodo_aux.recorrer_arbol_arriba():
                     print("Camino",node.showKakaroto())
         else:
-            nodos_posibles.append(nodo_aux)
-            print("Cell",nodo_aux.showCells())
-            print("Kakaroto",nodo_aux.showKakaroto())
-            for node in nodo_aux.recorrer_arbol_arriba():
-                print("Camino",node.showKakaroto())
-            print("Costo",nodo_aux.showCosto())
+            if nodo_aux.comparar_posicion():
+                if nodo_aux.nodo_puede_devolverse():
+                    nodos_posibles.append(nodo_aux)
+            else:
+                nodos_posibles.append(nodo_aux)
 
     #5,Si es una semilla, falta poner la logica para la semilla
     elif fila_nueva < mapa.shape[0] and mapa[fila_nueva, nodo.showKakaroto()[1]] == 5:
-        semillas = nodo.showSemillas().copy()
-        if [fila_nueva, nodo.showKakaroto()[1]] in nodo.showSemillas():
-            print("abajo semilla")
-            print("semillas antes de eliminar",nodo.showSemillas())
-            semillas.remove([fila_nueva,nodo.showKakaroto()[1]])
-        nodo_aux = Nodo(nodo.costo+1, semillas, nodo.bolas, nodo.freezers, nodo.cells, kakaroto=[nodo.showKakaroto()[0]+1,nodo.showKakaroto()[1]], padre=nodo)
-        #nodo.adicionarSemilla([fila_nueva,nodo.showKakaroto()[1]])
-        if nodo_aux.comparar_posicion():
-            if nodo_aux.nodo_puede_devolverse():
+        semillas, semillas_almacenadas = verificar_semillas(nodo, [fila_nueva, nodo.showKakaroto()[1]])
+        nodo_aux = Nodo(nodo.costo+1, semillas, semillas_almacenadas, nodo.bolas, nodo.freezers, nodo.cells, kakaroto=[nodo.showKakaroto()[0]+1,nodo.showKakaroto()[1]], padre=nodo)
+        if algoritmo == "profundidad":
+            if nodo_aux.nodo_valido(nodos_recorridos):
                 nodos_posibles.append(nodo_aux)
-                print("Semillas",nodo_aux.showSemillas())
-                print("Kakaroto",nodo_aux.showKakaroto())
                 for node in nodo_aux.recorrer_arbol_arriba():
                     print("Camino",node.showKakaroto())
-                print("Costo",nodo_aux.showCosto())
         else:
-            nodos_posibles.append(nodo_aux)
-            print("Semillas",nodo_aux.showSemillas())
-            print("Kakaroto",nodo_aux.showKakaroto())
-            for node in nodo_aux.recorrer_arbol_arriba():
-                print("Camino",node.showKakaroto())
-            print("Costo",nodo_aux.showCosto())
-        #nodo.semillas.append([fila_nueva,nodo.showKakaroto()[1]])#Se vuelve a agregar al nodo raiz la semilla que fue recolectada por kakaroto para el calculo de las demas posiciones
+            if nodo_aux.comparar_posicion():
+                if nodo_aux.nodo_puede_devolverse():
+                    nodos_posibles.append(nodo_aux)
+            else:
+                nodos_posibles.append(nodo_aux)
 
     #6,Si es una esfera, falta poner la logica para la esfera
     elif fila_nueva < mapa.shape[0] and mapa[fila_nueva, nodo.showKakaroto()[1]] == 6:
-        bolas = nodo.showBolas().copy()
-        if [fila_nueva, nodo.showKakaroto()[1]] in nodo.showBolas():
-            print("abajo esfera")
-            print("bolas antes de eliminar",nodo.showBolas())
-            bolas.remove([fila_nueva,nodo.showKakaroto()[1]])
-        nodo_aux = Nodo(nodo.costo+1, nodo.semillas, bolas, nodo.freezers, nodo.cells, kakaroto=[nodo.showKakaroto()[0]+1,nodo.showKakaroto()[1]], padre=nodo)
-        print("INCREIBLE",nodo_aux.comparar_posicion())
-        if nodo_aux.comparar_posicion():
-            if nodo_aux.nodo_puede_devolverse():
+        bolas = verificar_bolas(nodo, [fila_nueva, nodo.showKakaroto()[1]])
+        nodo_aux = Nodo(nodo.costo+1, nodo.semillas, nodo.semillas_almacenadas,bolas, nodo.freezers, nodo.cells, kakaroto=[nodo.showKakaroto()[0]+1,nodo.showKakaroto()[1]], padre=nodo)
+        if algoritmo == "profundidad":
+            if nodo_aux.nodo_valido(nodos_recorridos):
                 nodos_posibles.append(nodo_aux)
-                print("Hace la comparacion")
-                print("Esferas",nodo_aux.showBolas())
-                print("Kakaroto",nodo_aux.showKakaroto())
                 for node in nodo_aux.recorrer_arbol_arriba():
                     print("Camino",node.showKakaroto())
-                print("Costo",nodo_aux.showCosto())
         else:
-            nodos_posibles.append(nodo_aux)
-            print("Las posiciones no son iguales")
-            print("Esferas",nodo_aux.showBolas())
-            print("Kakaroto",nodo_aux.showKakaroto())
-            for node in nodo_aux.recorrer_arbol_arriba():
-                print("Camino",node.showKakaroto())
-            print("Costo",nodo_aux.showCosto())
-            print("---ESTADO DEL ABUELO---")
-            print("Kakaroto",nodo.padre.showKakaroto())
-            print("Bolas",nodo.padre.showBolas())
-            print("freezers",nodo.padre.showFreezers())
-            print("Cells",nodo.padre.showCells())
-            print("Semillas",nodo.padre.showSemillas())
-            print("---ESTADO DEL HIJO---")
-            print("Kakaroto",nodo_aux.showKakaroto())
-            print("Bolas",nodo_aux.showBolas())
-            print("freezers",nodo_aux.showFreezers())
-            print("Cells",nodo_aux.showCells())
-            print("Semillas",nodo_aux.showSemillas())
-            print("FIN")
-        #nodo.bolas.append([fila_nueva,nodo.showKakaroto()[1]])#Se vuelve a agregar al nodo raiz la bola que fue recolectada por kakaroto para el calculo de las demas posiciones
+            if nodo_aux.comparar_posicion():
+                if nodo_aux.nodo_puede_devolverse():
+                    nodos_posibles.append(nodo_aux)
+            else:
+                nodos_posibles.append(nodo_aux)
 #***
 
     else:
@@ -456,115 +430,84 @@ def puede_moverse(nodo):
     columna_nueva = nodo.showKakaroto()[1] + 1
     if columna_nueva < mapa.shape[1] and mapa[nodo.showKakaroto()[0], columna_nueva] == 0:
         print("derecha espacio vacio")
-        nodo_aux = Nodo(nodo.costo+1, nodo.semillas, nodo.bolas, nodo.freezers, nodo.cells, kakaroto=[nodo.showKakaroto()[0],nodo.showKakaroto()[1] + 1], padre=nodo)
-        if nodo_aux.comparar_posicion():
-            if nodo_aux.nodo_puede_devolverse():
+        nodo_aux = Nodo(nodo.costo+1, nodo.semillas, nodo.semillas_almacenadas,nodo.bolas, nodo.freezers, nodo.cells, kakaroto=[nodo.showKakaroto()[0],nodo.showKakaroto()[1] + 1], padre=nodo)
+        if algoritmo == "profundidad":
+            if nodo_aux.nodo_valido(nodos_recorridos):
                 nodos_posibles.append(nodo_aux)
                 for node in nodo_aux.recorrer_arbol_arriba():
                     print("Camino",node.showKakaroto())
         else:
-            nodos_posibles.append(nodo_aux)
-            print("Kakaroto",nodo_aux.showKakaroto())
-            for node in nodo_aux.recorrer_arbol_arriba():
-                print("Camino",node.showKakaroto())
-            print("Costo",nodo_aux.showCosto())
+            if nodo_aux.comparar_posicion():
+                if nodo_aux.nodo_puede_devolverse():
+                    nodos_posibles.append(nodo_aux)
+            else:
+                nodos_posibles.append(nodo_aux)
     
     #3,Si es un Frezzer
     elif columna_nueva < mapa.shape[1] and mapa[nodo.showKakaroto()[0], columna_nueva] == 3:
         print("derecha Frezzer")
-        nodo_aux = Nodo(nodo.costo+4, nodo.semillas, nodo.bolas, nodo.freezers, nodo.cells, kakaroto=[nodo.showKakaroto()[0],nodo.showKakaroto()[1] + 1], padre=nodo)
-        if nodo_aux.comparar_posicion():
-            if nodo_aux.nodo_puede_devolverse():
+        freezers, semillas_almacenadas, costo = verificar_freezers(nodo,[nodo.showKakaroto()[0], columna_nueva])
+        nodo_aux = Nodo(costo, nodo.semillas, semillas_almacenadas,nodo.bolas, freezers, nodo.cells,kakaroto=[nodo.showKakaroto()[0],nodo.showKakaroto()[1] + 1], padre=nodo)
+        if algoritmo == "profundidad":
+            if nodo_aux.nodo_valido(nodos_recorridos):
                 nodos_posibles.append(nodo_aux)
                 for node in nodo_aux.recorrer_arbol_arriba():
                     print("Camino",node.showKakaroto())
         else:
-            nodos_posibles.append(nodo_aux)
-            print("Frezzer",nodo_aux.showFreezers())
-            print("Kakaroto",nodo_aux.showKakaroto())
-            for node in nodo_aux.recorrer_arbol_arriba():
-                print("Camino",node.showKakaroto())
-            print("Costo",nodo_aux.showCosto())
+            if nodo_aux.comparar_posicion():
+                if nodo_aux.nodo_puede_devolverse():
+                    nodos_posibles.append(nodo_aux)
+            else:
+                nodos_posibles.append(nodo_aux)
 
     #4,Si es un Cell
     elif columna_nueva < mapa.shape[1] and mapa[nodo.showKakaroto()[0], columna_nueva] == 4:
         print("derecha Cell")
-        nodo_aux = Nodo(nodo.costo+7, nodo.semillas, nodo.bolas, nodo.freezers, nodo.cells, kakaroto=[nodo.showKakaroto()[0],nodo.showKakaroto()[1] + 1], padre=nodo)
-        if nodo_aux.comparar_posicion():
-            if nodo_aux.nodo_puede_devolverse():
+        cells, semillas_almacenadas, costo = verificar_cells(nodo,[nodo.showKakaroto()[0], columna_nueva])
+        nodo_aux = Nodo(costo, nodo.semillas, semillas_almacenadas,nodo.bolas, nodo.freezers, cells,kakaroto=[nodo.showKakaroto()[0],nodo.showKakaroto()[1] + 1], padre=nodo)
+        if algoritmo == "profundidad":
+            if nodo_aux.nodo_valido(nodos_recorridos):
                 nodos_posibles.append(nodo_aux)
                 for node in nodo_aux.recorrer_arbol_arriba():
                     print("Camino",node.showKakaroto())
         else:
-            nodos_posibles.append(nodo_aux)
-            print("Cell",nodo_aux.showCells())
-            print("Kakaroto",nodo_aux.showKakaroto())
-            for node in nodo_aux.recorrer_arbol_arriba():
-                print("Camino",node.showKakaroto())
-            print("Costo",nodo_aux.showCosto())
+            if nodo_aux.comparar_posicion():
+                if nodo_aux.nodo_puede_devolverse():
+                    nodos_posibles.append(nodo_aux)
+            else:
+                nodos_posibles.append(nodo_aux)
 
     #5,Si es una semilla, falta poner la logica para la semilla
     elif columna_nueva < mapa.shape[1] and mapa[nodo.showKakaroto()[0], columna_nueva] == 5:
-        semillas = nodo.showSemillas().copy()
-        if [nodo.showKakaroto()[0], columna_nueva] in nodo.showSemillas():
-            print("derecha semilla")
-            print("semillas antes de eliminar", nodo.showSemillas())
-            semillas.remove([nodo.showKakaroto()[0],columna_nueva])
-        nodo_aux = Nodo(nodo.costo+1, semillas, nodo.bolas, nodo.freezers, nodo.cells, kakaroto=[nodo.showKakaroto()[0],nodo.showKakaroto()[1] + 1], padre=nodo)
-        if nodo_aux.comparar_posicion():
-            if nodo_aux.nodo_puede_devolverse():
+        semillas, semillas_almacenadas = verificar_semillas(nodo, [nodo.showKakaroto()[0], columna_nueva])
+        nodo_aux = Nodo(nodo.costo+1, semillas, semillas_almacenadas,nodo.bolas, nodo.freezers, nodo.cells,kakaroto=[nodo.showKakaroto()[0],nodo.showKakaroto()[1] + 1], padre=nodo)
+        if algoritmo == "profundidad":
+            if nodo_aux.nodo_valido(nodos_recorridos):
                 nodos_posibles.append(nodo_aux)
-                print("Semillas",nodo_aux.showSemillas())
-                print("Kakaroto",nodo_aux.showKakaroto())
                 for node in nodo_aux.recorrer_arbol_arriba():
                     print("Camino",node.showKakaroto())
-                print("Costo",nodo_aux.showCosto())
         else:
-            nodos_posibles.append(nodo_aux)
-            print("Semillas",nodo_aux.showSemillas())
-            print("Kakaroto",nodo_aux.showKakaroto())
-            for node in nodo_aux.recorrer_arbol_arriba():
-                print("Camino",node.showKakaroto())
-            print("Costo",nodo_aux.showCosto())
-        #nodo.semillas.append([nodo.showKakaroto()[0],columna_nueva])#Se vuelve a agregar al nodo raiz la semilla que fue recolectada por kakaroto para el calculo de las demas posiciones
+            if nodo_aux.comparar_posicion():
+                if nodo_aux.nodo_puede_devolverse():
+                    nodos_posibles.append(nodo_aux)
+            else:
+                nodos_posibles.append(nodo_aux)
 
     #6,Si es una esfera, falta poner la logica para la esfera
     elif columna_nueva < mapa.shape[1] and mapa[nodo.showKakaroto()[0], columna_nueva] == 6:
-        bolas = nodo.showBolas().copy()
-        if [nodo.showKakaroto()[0], columna_nueva] in nodo.showBolas():
-            print("derecha esfera")
-            print("bolas antes de eliminar", nodo.showBolas())
-            bolas.remove([nodo.showKakaroto()[0],columna_nueva])
-        nodo_aux = Nodo(nodo.costo+1, nodo.semillas, bolas, nodo.freezers, nodo.cells, kakaroto=[nodo.showKakaroto()[0],nodo.showKakaroto()[1] + 1], padre=nodo)
-        if nodo_aux.comparar_posicion():
-            if nodo_aux.nodo_puede_devolverse():
+        bolas = verificar_bolas(nodo, [nodo.showKakaroto()[0], columna_nueva])
+        nodo_aux = Nodo(nodo.costo+1, nodo.semillas, nodo.semillas_almacenadas,bolas, nodo.freezers, nodo.cells, kakaroto=[nodo.showKakaroto()[0],nodo.showKakaroto()[1] + 1], padre=nodo)
+        if algoritmo == "profundidad":
+            if nodo_aux.nodo_valido(nodos_recorridos):
                 nodos_posibles.append(nodo_aux)
-                print("Esferas",nodo_aux.showBolas())
-                print("Kakaroto",nodo_aux.showKakaroto())
                 for node in nodo_aux.recorrer_arbol_arriba():
                     print("Camino",node.showKakaroto())
-                print("Costo",nodo_aux.showCosto())
         else:
-            nodos_posibles.append(nodo_aux)
-            print("Esferas",nodo_aux.showBolas())
-            print("Kakaroto",nodo_aux.showKakaroto())
-            for node in nodo_aux.recorrer_arbol_arriba():
-                    print("Camino",node.showKakaroto())
-            print("Costo",nodo_aux.showCosto())
-        print("---ESTADO DEL PADRE---")
-        print("Kakaroto",nodo.showKakaroto())
-        print("Bolas",nodo.showBolas())
-        print("freezers",nodo.showFreezers())
-        print("Cells",nodo.showCells())
-        print("Semillas",nodo.showSemillas())
-        print("---ESTADO DEL HIJO---")
-        print("Kakaroto",nodo_aux.showKakaroto())
-        print("Bolas",nodo_aux.showBolas())
-        print("freezers",nodo_aux.showFreezers())
-        print("Cells",nodo_aux.showCells())
-        print("Semillas",nodo_aux.showSemillas())
-        print("FIN")
-        #nodo.bolas.append([nodo.showKakaroto()[0],columna_nueva])#Se vuelve a agregar al nodo raiz la bola que fue recolectada por kakaroto para el calculo de las demas posiciones
+            if nodo_aux.comparar_posicion():
+                if nodo_aux.nodo_puede_devolverse():
+                    nodos_posibles.append(nodo_aux)
+            else:
+                nodos_posibles.append(nodo_aux)
     else:
         print("no derecha")
 
@@ -574,6 +517,9 @@ def puede_moverse(nodo):
     for node in nodos_posibles:
         print(node.showKakaroto())
         print("Array Bolas:",node.showBolas())
+        print("Semillas almacendas:", node.showSemillasAlmacenadas())
+        print("Freezers:",node.showFreezers())
+        print("Cells:",node.showCells())
     #print('profundidad del nodo:',nodos_posibles[0].showProfundidad())
 
     print("----FINAL----")
@@ -589,11 +535,12 @@ def gestionarNodos(nodos):
     for i in nodos:
         agregarNodoCola(i)
     #print('puta, que rika cola:', cola)
-    print('primero: ',cola[0].showKakaroto())
-    print('segundo: ',cola[1].showKakaroto())
+    #print('primero: ',cola[0].showKakaroto())
+    #print('segundo: ',cola[1].showKakaroto())
 
 def expandirNodo(nodo):
     if nodo.esMeta():
+    #if False:
         tiempo_final=time.time()
         #solucion = -1
         solucion.append(True)

@@ -1,5 +1,5 @@
 class Nodo:
-    def __init__(self,costo,semillas,bolas,freezers,cells,kakaroto,padre=None,operador=None):
+    def __init__(self,costo,semillas,semillas_almacenadas,bolas,freezers,cells,kakaroto,padre=None,operador=None):
         self.costo = costo
         self.padre = padre
         self.operador = operador # operador utilizado para que goku llegara a esta posicion
@@ -10,6 +10,7 @@ class Nodo:
         self.semillas = semillas
         self.primerobjetivo = 0
         self.val_heuristica = 0
+        self.semillas_almacenadas = semillas_almacenadas
         if padre is None:
             self.profundidad = 0
         else:
@@ -35,7 +36,10 @@ class Nodo:
     
     def showSemillas(self):
         return self.semillas
-    
+
+    def showSemillasAlmacenadas(self):
+        return self.semillas_almacenadas
+
     def showBolas(self):
         return self.bolas
     
@@ -63,6 +67,23 @@ class Nodo:
             return True
         else:
             return False
+    
+    def nodo_valido(self, lista_nodos):
+        count = 0
+        if self.padre==None:
+            return True
+        for n in lista_nodos:
+            #if self.showKakaroto() in lista_nodos:
+            #print("self_kakaroto:",self.showKakaroto())
+            if self.bolas == n.bolas and self.freezers == n.freezers and self.cells == n.cells and self.semillas == n.semillas and self.kakaroto == n.kakaroto:
+                #print("nodoInvalido",n.kakaroto)
+                count = count+1
+        if count>0:
+            return False
+        else:
+            return True
+            # else:
+            #     return True
 
     def comparar_posicion(self):
         if self.padre==None:
@@ -81,13 +102,11 @@ class Nodo:
     def eliminarBola(self, bola):
         self.bolas.remove(bola)
         return self.bolas
-    
     def definir_primer_objetivo(self,objetivo):
         self.primerobjetivo = objetivo
 
     def showValHeuristica(self):
         return self.val_heuristica
-    
     def heuristica(self):
         if len(self.bolas)==2:
             aux = abs(self.bolas[0][0]-self.kakaroto[0]) + abs(self.bolas[0][1]-self.kakaroto[1])

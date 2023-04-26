@@ -102,20 +102,21 @@ class Nodo:
     def eliminarBola(self, bola):
         self.bolas.remove(bola)
         return self.bolas
+    
     def definir_primer_objetivo(self,objetivo):
         self.primerobjetivo = objetivo
 
     def showValHeuristica(self):
         return self.val_heuristica
+    
     def heuristica(self):
         if len(self.bolas)==2:
             aux = abs(self.bolas[0][0]-self.kakaroto[0]) + abs(self.bolas[0][1]-self.kakaroto[1])
-            for i in range(len(self.bolas)):
-                aux2 = abs(self.bolas[i][0]-self.kakaroto[0]) + abs(self.bolas[i][1]-self.kakaroto[1])
-                if aux>aux2:
-                    self.definir_primer_objetivo(i)
-                else:
-                    self.definir_primer_objetivo(0)
+            aux2 = abs(self.bolas[1][0]-self.kakaroto[0]) + abs(self.bolas[1][1]-self.kakaroto[1])
+            if aux>aux2:
+                self.definir_primer_objetivo(1)
+            else:
+                self.definir_primer_objetivo(0)
 
             if self.primerobjetivo == 0:
                 distancia1 = abs(self.bolas[0][0]-self.kakaroto[0]) + abs(self.bolas[0][1]-self.kakaroto[1])
@@ -134,3 +135,8 @@ class Nodo:
         else:
             self.val_heuristica = 0
             return self.showValHeuristica()
+    
+    def heuristicaCosto(self):
+        self.heuristica()
+        return self.showCosto() + self.showValHeuristica()
+ 

@@ -580,7 +580,8 @@ def expandirCola():
         nodo = cola.pop(nodoMenorHeuristica())
         expandirNodo(nodo)
     elif algoritmo == "a*":
-        pass
+        nodo = cola.pop(nodoMenorCostoEstimado())
+        expandirNodo(nodo)
 
 def nodoBarato():
     menor = cola[0]
@@ -598,6 +599,16 @@ def nodoMenorHeuristica():
     for i in range(len(cola)):
         nuevo_costo_estimado = cola[i].heuristica()
         if menor.heuristica() >= nuevo_costo_estimado:
+            menor = cola[i]
+            indice = i
+    return indice
+
+def nodoMenorCostoEstimado():
+    menor = cola[0]
+    indice = None
+    for i in range(len(cola)):
+        nuevo_costo_estimado = cola[i].heuristicaCosto()
+        if menor.heuristicaCosto() >= nuevo_costo_estimado:
             menor = cola[i]
             indice = i
     return indice

@@ -164,7 +164,7 @@ def puede_moverse(nodo):
     #0,Si es un espacio vacio
     if fila_nueva >= 0 and mapa[fila_nueva, nodo.showKakaroto()[1]] == 0:
         print("arriba espacio vacio")
-        nodo_aux = Nodo(nodo.costo+1, nodo.semillas, nodo.semillas_almacenadas, nodo.bolas, nodo.freezers, nodo.cells, kakaroto=[nodo.showKakaroto()[0]-1,nodo.showKakaroto()[1]],padre=nodo)
+        nodo_aux = Nodo(nodo.costo+1, nodo.semillas, nodo.semillas_almacenadas, nodo.bolas, nodo.freezers, nodo.cells, kakaroto=[nodo.showKakaroto()[0]-1,nodo.showKakaroto()[1]],padre=nodo, operador="arriba")
         if algoritmo == "profundidad":
             if nodo_aux.nodo_valido(nodos_recorridos):
                 nodos_posibles.append(nodo_aux)
@@ -181,7 +181,7 @@ def puede_moverse(nodo):
     elif fila_nueva >= 0 and mapa[fila_nueva, nodo.showKakaroto()[1]] == 3:
         print("arriba Frezzer")
         freezers, semillas_almacenadas, costo = verificar_freezers(nodo,[fila_nueva, nodo.showKakaroto()[1]])
-        nodo_aux = Nodo(costo, nodo.semillas, semillas_almacenadas, nodo.bolas, freezers, nodo.cells,kakaroto=[nodo.showKakaroto()[0]-1,nodo.showKakaroto()[1]], padre=nodo)
+        nodo_aux = Nodo(costo, nodo.semillas, semillas_almacenadas, nodo.bolas, freezers, nodo.cells,kakaroto=[nodo.showKakaroto()[0]-1,nodo.showKakaroto()[1]], padre=nodo, operador="arriba")
         if algoritmo == "profundidad":
             if nodo_aux.nodo_valido(nodos_recorridos):
                 nodos_posibles.append(nodo_aux)
@@ -198,7 +198,7 @@ def puede_moverse(nodo):
     elif fila_nueva >= 0 and mapa[fila_nueva, nodo.showKakaroto()[1]] == 4:
         print("arriba Cell")
         cells, semillas_almacenadas, costo = verificar_cells(nodo,[fila_nueva, nodo.showKakaroto()[1]])
-        nodo_aux = Nodo(costo, nodo.semillas, semillas_almacenadas, nodo.bolas, nodo.freezers, cells,kakaroto=[nodo.showKakaroto()[0]-1,nodo.showKakaroto()[1]], padre=nodo)
+        nodo_aux = Nodo(costo, nodo.semillas, semillas_almacenadas, nodo.bolas, nodo.freezers, cells,kakaroto=[nodo.showKakaroto()[0]-1,nodo.showKakaroto()[1]], padre=nodo, operador="arriba")
         if algoritmo == "profundidad":
             if nodo_aux.nodo_valido(nodos_recorridos):
                 nodos_posibles.append(nodo_aux)
@@ -214,7 +214,7 @@ def puede_moverse(nodo):
     #5,Si es una semilla, falta poner la logica para la semilla
     elif fila_nueva >= 0 and mapa[fila_nueva, nodo.showKakaroto()[1]] == 5:
         semillas, semillas_almacenadas = verificar_semillas(nodo, [fila_nueva, nodo.showKakaroto()[1]])
-        nodo_aux = Nodo(nodo.costo+1, semillas, semillas_almacenadas, nodo.bolas, nodo.freezers, nodo.cells,kakaroto=[nodo.showKakaroto()[0]-1,nodo.showKakaroto()[1]], padre=nodo)
+        nodo_aux = Nodo(nodo.costo+1, semillas, semillas_almacenadas, nodo.bolas, nodo.freezers, nodo.cells,kakaroto=[nodo.showKakaroto()[0]-1,nodo.showKakaroto()[1]], padre=nodo, operador="arriba")
         if algoritmo == "profundidad":
             if nodo_aux.nodo_valido(nodos_recorridos):
                 nodos_posibles.append(nodo_aux)
@@ -232,7 +232,7 @@ def puede_moverse(nodo):
     #6,Si es una esfera, falta poner la logica para la esfera
     elif fila_nueva >= 0 and mapa[fila_nueva, nodo.showKakaroto()[1]] == 6:
         bolas = verificar_bolas(nodo, [fila_nueva, nodo.showKakaroto()[1]])
-        nodo_aux = Nodo(nodo.costo+1, nodo.semillas, nodo.semillas_almacenadas, bolas, nodo.freezers, nodo.cells, kakaroto=[nodo.showKakaroto()[0]-1,nodo.showKakaroto()[1]], padre=nodo)
+        nodo_aux = Nodo(nodo.costo+1, nodo.semillas, nodo.semillas_almacenadas, bolas, nodo.freezers, nodo.cells, kakaroto=[nodo.showKakaroto()[0]-1,nodo.showKakaroto()[1]], padre=nodo, operador="arriba")
         if algoritmo == "profundidad":
             if nodo_aux.nodo_valido(nodos_recorridos):
                 nodos_posibles.append(nodo_aux)
@@ -253,7 +253,7 @@ def puede_moverse(nodo):
     columna_nueva = nodo.showKakaroto()[1] - 1
     if columna_nueva >= 0 and mapa[nodo.showKakaroto()[0], columna_nueva] == 0:
         print("izquierda espacio vacio")
-        nodo_aux = Nodo(nodo.costo+1, nodo.semillas, nodo.semillas_almacenadas, nodo.bolas, nodo.freezers, nodo.cells, kakaroto=[nodo.showKakaroto()[0],nodo.showKakaroto()[1] - 1], padre=nodo)
+        nodo_aux = Nodo(nodo.costo+1, nodo.semillas, nodo.semillas_almacenadas, nodo.bolas, nodo.freezers, nodo.cells, kakaroto=[nodo.showKakaroto()[0],nodo.showKakaroto()[1] - 1], padre=nodo, operador="izquierda")
         if algoritmo == "profundidad":
             if nodo_aux.nodo_valido(nodos_recorridos):
                 nodos_posibles.append(nodo_aux)
@@ -270,7 +270,7 @@ def puede_moverse(nodo):
     elif columna_nueva >= 0 and mapa[nodo.showKakaroto()[0], columna_nueva] == 3:
         print("izquierda Frezzer")
         freezers, semillas_almacenadas, costo = verificar_freezers(nodo,[nodo.showKakaroto()[0], columna_nueva])
-        nodo_aux = Nodo(costo, nodo.semillas, semillas_almacenadas, nodo.bolas, freezers, nodo.cells,kakaroto=[nodo.showKakaroto()[0],nodo.showKakaroto()[1] - 1], padre=nodo)
+        nodo_aux = Nodo(costo, nodo.semillas, semillas_almacenadas, nodo.bolas, freezers, nodo.cells,kakaroto=[nodo.showKakaroto()[0],nodo.showKakaroto()[1] - 1], padre=nodo, operador="izquierda")
         if algoritmo == "profundidad":
             if nodo_aux.nodo_valido(nodos_recorridos):
                 nodos_posibles.append(nodo_aux)
@@ -287,7 +287,7 @@ def puede_moverse(nodo):
     elif columna_nueva >= 0 and mapa[nodo.showKakaroto()[0], columna_nueva] == 4:
         print("izquierda Cell")
         cells, semillas_almacenadas, costo = verificar_cells(nodo,[nodo.showKakaroto()[0], columna_nueva])
-        nodo_aux = Nodo(costo, nodo.semillas, semillas_almacenadas, nodo.bolas, nodo.freezers, cells,kakaroto=[nodo.showKakaroto()[0],nodo.showKakaroto()[1] - 1], padre=nodo)
+        nodo_aux = Nodo(costo, nodo.semillas, semillas_almacenadas, nodo.bolas, nodo.freezers, cells,kakaroto=[nodo.showKakaroto()[0],nodo.showKakaroto()[1] - 1], padre=nodo, operador="izquierda")
         if algoritmo == "profundidad":
             if nodo_aux.nodo_valido(nodos_recorridos):
                 nodos_posibles.append(nodo_aux)
@@ -303,7 +303,7 @@ def puede_moverse(nodo):
     #5,Si es una semilla, falta poner la logica para la semilla
     elif columna_nueva >= 0 and mapa[nodo.showKakaroto()[0], columna_nueva] == 5:
         semillas, semillas_almacenadas = verificar_semillas(nodo,[nodo.showKakaroto()[0], columna_nueva])
-        nodo_aux = Nodo(nodo.costo+1, semillas, semillas_almacenadas,nodo.bolas, nodo.freezers, nodo.cells,kakaroto=[nodo.showKakaroto()[0],nodo.showKakaroto()[1] - 1], padre=nodo)
+        nodo_aux = Nodo(nodo.costo+1, semillas, semillas_almacenadas,nodo.bolas, nodo.freezers, nodo.cells,kakaroto=[nodo.showKakaroto()[0],nodo.showKakaroto()[1] - 1], padre=nodo, operador="izquierda")
         if algoritmo == "profundidad":
             if nodo_aux.nodo_valido(nodos_recorridos):
                 nodos_posibles.append(nodo_aux)
@@ -319,7 +319,7 @@ def puede_moverse(nodo):
     #6,Si es una esfera, falta poner la logica para la esfera
     elif columna_nueva >= 0 and mapa[nodo.showKakaroto()[0], columna_nueva] == 6:
         bolas = verificar_bolas(nodo, [nodo.showKakaroto()[0], columna_nueva])
-        nodo_aux = Nodo(nodo.costo+1, nodo.semillas, nodo.semillas_almacenadas, bolas, nodo.freezers, nodo.cells, kakaroto=[nodo.showKakaroto()[0],nodo.showKakaroto()[1] - 1], padre=nodo)
+        nodo_aux = Nodo(nodo.costo+1, nodo.semillas, nodo.semillas_almacenadas, bolas, nodo.freezers, nodo.cells, kakaroto=[nodo.showKakaroto()[0],nodo.showKakaroto()[1] - 1], padre=nodo, operador="izquierda")
         if algoritmo == "profundidad":
             if nodo_aux.nodo_valido(nodos_recorridos):
                 nodos_posibles.append(nodo_aux)
@@ -340,7 +340,7 @@ def puede_moverse(nodo):
 
     if fila_nueva < mapa.shape[0] and mapa[fila_nueva, nodo.showKakaroto()[1]] == 0:
         print("abajo espacio vacio")
-        nodo_aux = Nodo(nodo.costo+1, nodo.semillas, nodo.semillas_almacenadas, nodo.bolas, nodo.freezers, nodo.cells, kakaroto=[nodo.showKakaroto()[0]+1,nodo.showKakaroto()[1]], padre=nodo)
+        nodo_aux = Nodo(nodo.costo+1, nodo.semillas, nodo.semillas_almacenadas, nodo.bolas, nodo.freezers, nodo.cells, kakaroto=[nodo.showKakaroto()[0]+1,nodo.showKakaroto()[1]], padre=nodo, operador="abajo")
         if algoritmo == "profundidad":
             if nodo_aux.nodo_valido(nodos_recorridos):
                 nodos_posibles.append(nodo_aux)
@@ -358,7 +358,7 @@ def puede_moverse(nodo):
     elif fila_nueva < mapa.shape[0] and mapa[fila_nueva, nodo.showKakaroto()[1]] == 3:
         print("abajo Frezzer")
         freezers, semillas_almacenadas, costo= verificar_freezers(nodo,[fila_nueva, nodo.showKakaroto()[1]])
-        nodo_aux = Nodo(costo, nodo.semillas, semillas_almacenadas, nodo.bolas, freezers, nodo.cells,kakaroto=[nodo.showKakaroto()[0]+1,nodo.showKakaroto()[1]], padre=nodo)
+        nodo_aux = Nodo(costo, nodo.semillas, semillas_almacenadas, nodo.bolas, freezers, nodo.cells,kakaroto=[nodo.showKakaroto()[0]+1,nodo.showKakaroto()[1]], padre=nodo, operador="abajo")
         if algoritmo == "profundidad":
             if nodo_aux.nodo_valido(nodos_recorridos):
                 nodos_posibles.append(nodo_aux)
@@ -375,7 +375,7 @@ def puede_moverse(nodo):
     elif fila_nueva < mapa.shape[0] and mapa[fila_nueva, nodo.showKakaroto()[1]] == 4:
         print("abajo Cell")
         cells, semillas_almacenadas, costo = verificar_cells(nodo,[fila_nueva, nodo.showKakaroto()[1]])
-        nodo_aux = Nodo(costo, nodo.semillas, semillas_almacenadas, nodo.bolas, nodo.freezers, cells,kakaroto=[nodo.showKakaroto()[0]+1,nodo.showKakaroto()[1]], padre=nodo)
+        nodo_aux = Nodo(costo, nodo.semillas, semillas_almacenadas, nodo.bolas, nodo.freezers, cells,kakaroto=[nodo.showKakaroto()[0]+1,nodo.showKakaroto()[1]], padre=nodo, operador="abajo")
         if algoritmo == "profundidad":
             if nodo_aux.nodo_valido(nodos_recorridos):
                 nodos_posibles.append(nodo_aux)
@@ -391,7 +391,7 @@ def puede_moverse(nodo):
     #5,Si es una semilla, falta poner la logica para la semilla
     elif fila_nueva < mapa.shape[0] and mapa[fila_nueva, nodo.showKakaroto()[1]] == 5:
         semillas, semillas_almacenadas = verificar_semillas(nodo, [fila_nueva, nodo.showKakaroto()[1]])
-        nodo_aux = Nodo(nodo.costo+1, semillas, semillas_almacenadas, nodo.bolas, nodo.freezers, nodo.cells, kakaroto=[nodo.showKakaroto()[0]+1,nodo.showKakaroto()[1]], padre=nodo)
+        nodo_aux = Nodo(nodo.costo+1, semillas, semillas_almacenadas, nodo.bolas, nodo.freezers, nodo.cells, kakaroto=[nodo.showKakaroto()[0]+1,nodo.showKakaroto()[1]], padre=nodo, operador="abajo")
         if algoritmo == "profundidad":
             if nodo_aux.nodo_valido(nodos_recorridos):
                 nodos_posibles.append(nodo_aux)
@@ -407,7 +407,7 @@ def puede_moverse(nodo):
     #6,Si es una esfera, falta poner la logica para la esfera
     elif fila_nueva < mapa.shape[0] and mapa[fila_nueva, nodo.showKakaroto()[1]] == 6:
         bolas = verificar_bolas(nodo, [fila_nueva, nodo.showKakaroto()[1]])
-        nodo_aux = Nodo(nodo.costo+1, nodo.semillas, nodo.semillas_almacenadas,bolas, nodo.freezers, nodo.cells, kakaroto=[nodo.showKakaroto()[0]+1,nodo.showKakaroto()[1]], padre=nodo)
+        nodo_aux = Nodo(nodo.costo+1, nodo.semillas, nodo.semillas_almacenadas,bolas, nodo.freezers, nodo.cells, kakaroto=[nodo.showKakaroto()[0]+1,nodo.showKakaroto()[1]], padre=nodo, operador="abajo")
         if algoritmo == "profundidad":
             if nodo_aux.nodo_valido(nodos_recorridos):
                 nodos_posibles.append(nodo_aux)
@@ -430,7 +430,7 @@ def puede_moverse(nodo):
     columna_nueva = nodo.showKakaroto()[1] + 1
     if columna_nueva < mapa.shape[1] and mapa[nodo.showKakaroto()[0], columna_nueva] == 0:
         print("derecha espacio vacio")
-        nodo_aux = Nodo(nodo.costo+1, nodo.semillas, nodo.semillas_almacenadas,nodo.bolas, nodo.freezers, nodo.cells, kakaroto=[nodo.showKakaroto()[0],nodo.showKakaroto()[1] + 1], padre=nodo)
+        nodo_aux = Nodo(nodo.costo+1, nodo.semillas, nodo.semillas_almacenadas,nodo.bolas, nodo.freezers, nodo.cells, kakaroto=[nodo.showKakaroto()[0],nodo.showKakaroto()[1] + 1], padre=nodo, operador="derecha")
         if algoritmo == "profundidad":
             if nodo_aux.nodo_valido(nodos_recorridos):
                 nodos_posibles.append(nodo_aux)
@@ -447,7 +447,7 @@ def puede_moverse(nodo):
     elif columna_nueva < mapa.shape[1] and mapa[nodo.showKakaroto()[0], columna_nueva] == 3:
         print("derecha Frezzer")
         freezers, semillas_almacenadas, costo = verificar_freezers(nodo,[nodo.showKakaroto()[0], columna_nueva])
-        nodo_aux = Nodo(costo, nodo.semillas, semillas_almacenadas,nodo.bolas, freezers, nodo.cells,kakaroto=[nodo.showKakaroto()[0],nodo.showKakaroto()[1] + 1], padre=nodo)
+        nodo_aux = Nodo(costo, nodo.semillas, semillas_almacenadas,nodo.bolas, freezers, nodo.cells,kakaroto=[nodo.showKakaroto()[0],nodo.showKakaroto()[1] + 1], padre=nodo, operador="derecha")
         if algoritmo == "profundidad":
             if nodo_aux.nodo_valido(nodos_recorridos):
                 nodos_posibles.append(nodo_aux)
@@ -464,7 +464,7 @@ def puede_moverse(nodo):
     elif columna_nueva < mapa.shape[1] and mapa[nodo.showKakaroto()[0], columna_nueva] == 4:
         print("derecha Cell")
         cells, semillas_almacenadas, costo = verificar_cells(nodo,[nodo.showKakaroto()[0], columna_nueva])
-        nodo_aux = Nodo(costo, nodo.semillas, semillas_almacenadas,nodo.bolas, nodo.freezers, cells,kakaroto=[nodo.showKakaroto()[0],nodo.showKakaroto()[1] + 1], padre=nodo)
+        nodo_aux = Nodo(costo, nodo.semillas, semillas_almacenadas,nodo.bolas, nodo.freezers, cells,kakaroto=[nodo.showKakaroto()[0],nodo.showKakaroto()[1] + 1], padre=nodo, operador="derecha")
         if algoritmo == "profundidad":
             if nodo_aux.nodo_valido(nodos_recorridos):
                 nodos_posibles.append(nodo_aux)
@@ -480,7 +480,7 @@ def puede_moverse(nodo):
     #5,Si es una semilla, falta poner la logica para la semilla
     elif columna_nueva < mapa.shape[1] and mapa[nodo.showKakaroto()[0], columna_nueva] == 5:
         semillas, semillas_almacenadas = verificar_semillas(nodo, [nodo.showKakaroto()[0], columna_nueva])
-        nodo_aux = Nodo(nodo.costo+1, semillas, semillas_almacenadas,nodo.bolas, nodo.freezers, nodo.cells,kakaroto=[nodo.showKakaroto()[0],nodo.showKakaroto()[1] + 1], padre=nodo)
+        nodo_aux = Nodo(nodo.costo+1, semillas, semillas_almacenadas,nodo.bolas, nodo.freezers, nodo.cells,kakaroto=[nodo.showKakaroto()[0],nodo.showKakaroto()[1] + 1], padre=nodo, operador="derecha")
         if algoritmo == "profundidad":
             if nodo_aux.nodo_valido(nodos_recorridos):
                 nodos_posibles.append(nodo_aux)
@@ -496,7 +496,7 @@ def puede_moverse(nodo):
     #6,Si es una esfera, falta poner la logica para la esfera
     elif columna_nueva < mapa.shape[1] and mapa[nodo.showKakaroto()[0], columna_nueva] == 6:
         bolas = verificar_bolas(nodo, [nodo.showKakaroto()[0], columna_nueva])
-        nodo_aux = Nodo(nodo.costo+1, nodo.semillas, nodo.semillas_almacenadas,bolas, nodo.freezers, nodo.cells, kakaroto=[nodo.showKakaroto()[0],nodo.showKakaroto()[1] + 1], padre=nodo)
+        nodo_aux = Nodo(nodo.costo+1, nodo.semillas, nodo.semillas_almacenadas,bolas, nodo.freezers, nodo.cells, kakaroto=[nodo.showKakaroto()[0],nodo.showKakaroto()[1] + 1], padre=nodo, operador="derecha")
         if algoritmo == "profundidad":
             if nodo_aux.nodo_valido(nodos_recorridos):
                 nodos_posibles.append(nodo_aux)

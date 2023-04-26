@@ -48,7 +48,6 @@ camino = []
 nodos_solucion = []
 tiempo_inicial = time.time()
 tiempo_final = 0
-
 # #Creamos un nodo unicial, en donde se guardara el estado inicial
 nodo_raiz= Nodo(costo=0, semillas=[],semillas_almacenadas=0, bolas=[], freezers=[], cells=[], kakaroto=[])
 cola = [] #se guardaran los nodos en este array

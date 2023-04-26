@@ -102,13 +102,11 @@ class Nodo:
     def eliminarBola(self, bola):
         self.bolas.remove(bola)
         return self.bolas
-
     def definir_primer_objetivo(self,objetivo):
         self.primerobjetivo = objetivo
 
     def showValHeuristica(self):
         return self.val_heuristica
-
     def heuristica(self):
         if len(self.bolas)==2:
             aux = abs(self.bolas[0][0]-self.kakaroto[0]) + abs(self.bolas[0][1]-self.kakaroto[1])

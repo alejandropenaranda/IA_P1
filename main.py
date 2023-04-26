@@ -1,5 +1,6 @@
 import sys
 import numpy as np
+import time
 from nodes import Nodo
 
 # Aqui se abre el archivo de texto que contiene el mapa y se guarda en la variable board en forma de matriz
@@ -44,7 +45,8 @@ algoritmo = escogerAlgoritmo()
 solucion  = []
 camino = []
 nodos_solucion = []
-
+tiempo_inicial = time.time()
+tiempo_final = 0
 # #Creamos un nodo unicial, en donde se guardara el estado inicial
 nodo_raiz= Nodo(costo=0, semillas=[], bolas=[], freezers=[], cells=[], kakaroto=[])
 cola = [] #se guardaran los nodos en este array
@@ -592,6 +594,7 @@ def gestionarNodos(nodos):
 
 def expandirNodo(nodo):
     if nodo.esMeta():
+        tiempo_final=time.time()
         #solucion = -1
         solucion.append(True)
         print("posicion final goku:",nodo.showKakaroto())
@@ -605,6 +608,10 @@ def expandirNodo(nodo):
         camino.reverse()
         nodos_solucion.reverse()
         print("CAMINO",camino)
+        tiempo = round(tiempo_final - tiempo_inicial,5)
+        print('incial',tiempo_inicial)
+        print('final',tiempo_final)
+        print('El tiempo de ejecucion del algoritmo de busqueda fue de: {} segundos'.format(tiempo))
     else:
         gestionarNodos(puede_moverse(nodo))
         #costo,semillas,etc = funcionAcciones(nodo)

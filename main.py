@@ -25,19 +25,29 @@ mapa = crear_mapa_desde_archivo('Prueba1.txt')
 
 #funcion que le pregunta al usuario que algoritmo desea ejecutar
 def escogerAlgoritmo():
-    choice = input("ingrese el nombre del algoritmo de busqueda que desee ejecutar (costo, amplitud, profundidad, avara, a*):")
-    if choice == "costo":
-        return choice
-    elif choice == "amplitud":
-        return choice
-    elif choice == "profundidad":
-        return choice
-    elif choice == "avara":
-        return choice
-    elif choice == "a*":
-        return choice
+    tipo = input("ingrese el tipo de busqueda deseado (informada/no informada) ")
+    if tipo == "no informada":
+        choice = input("ingrese el nombre del algoritmo de busqueda no informada que desee ejecutar (costo, amplitud, profundidad):")
+        if choice == "costo":
+            return choice
+        elif choice == "amplitud":
+            return choice
+        elif choice == "profundidad":
+            return choice
+        else:
+            print("escoja un algoritmo de busqueda no informada valido")
+            sys.exit()
+    elif tipo == "informada":
+        choice = input("ingrese el nombre del algoritmo de busqueda informada que desee ejecutar (avara, a*):")
+        if choice == "avara":
+            return choice
+        elif choice == "a*":
+            return choice
+        else:
+            print("escoja un algoritmo de busqueda informada valido")
+            sys.exit()
     else:
-        print("escoja un algoritmo de busqueda valido")
+        print("escoja un tipo de busqueda valido")
         sys.exit()
 
 # #__________________________________________definicion de variables globales
@@ -48,6 +58,7 @@ camino = []
 nodos_solucion = []
 tiempo_inicial = time.time()
 tiempo_final = 0
+nodosExpandidos = 0
 # #Creamos un nodo unicial, en donde se guardara el estado inicial
 nodo_raiz= Nodo(costo=0, semillas=[],semillas_almacenadas=0, bolas=[], freezers=[], cells=[], kakaroto=[])
 cola = [] #se guardaran los nodos en este array
@@ -539,6 +550,8 @@ def gestionarNodos(nodos):
     #print('segundo: ',cola[1].showKakaroto())
 
 def expandirNodo(nodo):
+    global nodosExpandidos
+    nodosExpandidos = nodosExpandidos + 1
     if nodo.esMeta():
     #if False:
         tiempo_final=time.time()
@@ -559,6 +572,7 @@ def expandirNodo(nodo):
         print('incial',tiempo_inicial)
         print('final',tiempo_final)
         print('El tiempo de ejecucion del algoritmo de busqueda fue de: {} segundos'.format(tiempo))
+        print("la cantidad de nodos que se expandieron es de: ", nodosExpandidos)
     else:
         gestionarNodos(puede_moverse(nodo))
         #costo,semillas,etc = funcionAcciones(nodo)

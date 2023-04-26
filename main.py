@@ -18,8 +18,8 @@ def crear_mapa_desde_archivo(nombre_archivo):
         return np.array(mapa)
 
 mapa = crear_mapa_desde_archivo('Prueba1.txt')
-print(mapa)
-print("len:",range(len(mapa)))
+#print(mapa)
+#print("len:",range(len(mapa)))
 
 #funcion que le pregunta al usuario que algoritmo desea ejecutar
 def escogerAlgoritmo():
@@ -104,6 +104,7 @@ def find_initial_positions(board):
 
 def puede_moverse(nodo):
     print("posicion inicial kakaroto:",nodo.showKakaroto())
+    print('valor heuristica:', nodo.heuristica())
     nodos_posibles = []
     #nodos_recorridos = nodo.recorrer_arbol_arriba()
 
@@ -585,7 +586,7 @@ kakaroto,freezers,cells,seeds,balls = find_initial_positions(mapa)
 def gestionarNodos(nodos):
     for i in nodos:
         agregarNodoCola(i)
-    print('puta, que rika cola:', cola)
+    #print('puta, que rika cola:', cola)
     print('primero: ',cola[0].showKakaroto())
     print('segundo: ',cola[1].showKakaroto())
 
@@ -622,7 +623,8 @@ def expandirCola():
         nodo = cola.pop(0)   #remueve el primer elemento de la cola y lo expande
         expandirNodo(nodo) 
     elif algoritmo == "avara":
-        pass
+        nodo = cola.pop(nodoMenorHeuristica())
+        expandirNodo(nodo)
     elif algoritmo == "a*":
         pass
 
@@ -632,6 +634,16 @@ def nodoBarato():
     for i in range(len(cola)):
         nuevo_costo = cola[i].showCosto()
         if menor.showCosto() >= nuevo_costo:
+            menor = cola[i]
+            indice = i
+    return indice
+
+def nodoMenorHeuristica():
+    menor = cola[0]
+    indice = None
+    for i in range(len(cola)):
+        nuevo_costo_estimado = cola[i].heuristica()
+        if menor.heuristica() >= nuevo_costo_estimado:
             menor = cola[i]
             indice = i
     return indice
@@ -651,9 +663,9 @@ def agregarNodoCola(nodo):
     elif algoritmo == "profundidad":
         cola.insert(0,nodo) #agrega el nodo al principio de la cola
     elif algoritmo == "avara":
-        pass
+        cola.append(nodo)
     elif algoritmo == "a*":
-        pass
+        cola.append(nodo)
 
 #expandirNodo(nodo_raiz)
 

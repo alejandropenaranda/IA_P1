@@ -1,8 +1,10 @@
 import pygame , sys
+from pygame.locals import *
 import math
-from main import (nodos_solucion , mapa)
+from main import (nodos_solucion , mapa, tiempo, nodosExpandidos)
 
-#solo funciona para matrices nxn
+final = nodos_solucion[-1]
+pygame.font.init()
 
 #se crea el tablero, nota si se actualiza el tablero se debe de referenciar otra vez ya que no esta en el while del refresco
 def create_board (matriz,size):
@@ -38,18 +40,29 @@ def iniciarGUI(nodo):
     #se inicia la aplicacion
     
     pygame.init()
+
+    #Configuracion para el texto
     nodos_lista=nodos_solucion
     auxiliar=1
     pintar_juego(nodo) #pinta el tablero
 
     #while para la logica o los eventos
-    while auxiliar < len(nodos_lista):
+    #while auxiliar < len(nodos_lista):
+    aux = True
+    while aux:
         tiempo = math.floor(pygame.time.get_ticks()/1000)
-        if tiempo == auxiliar:
-            pintar_juego(nodos_lista[auxiliar])
-            auxiliar = auxiliar+1
-        pygame.display.flip()
-        pygame.display.update()
+
+        if auxiliar < len(nodos_lista):
+            if tiempo == auxiliar:
+                pintar_juego(nodos_lista[auxiliar])
+                auxiliar = auxiliar+1
+            pygame.display.flip()
+            pygame.display.update()
+        else:
+            screen.fill(white)
+            pintarEstadisticas()
+            pygame.display.update()
+        
         
         for event in pygame.event.get():
             
@@ -96,7 +109,30 @@ def pintar_juego(nodo):
     pintar_seeds(semillas)
 
     screen.blit(gokuImg, ((kakaroto[1]*imgsize),(kakaroto[0]*imgsize)))
+
+#Definir colores
+black = (0,0,0)
+red = (255,0,0)
+blue = (0,0,255)
+green = (0,255,0)
+white = (255,255,255)
     
+fuente = pygame.font.SysFont('Segoe UI',28)
+fuente2 = pygame.font.SysFont('Segoe UI', 40)
+texto = fuente.render("prueba de texto",True,black)
+
+def pintarEstadisticas():
+    title = fuente2.render('Estadisticas', True,black)
+    nodos = fuente.render('La cantidad de nodos que se expandieron es de: '+str(nodosExpandidos),True,black )
+    profundidad = fuente.render('Profundidad del arbol de busqueda: '+str(final.showProfundidad()),True, black)
+    time = fuente.render('El tiempo de ejecucion del algoritmo de busqueda fue de: '+str(tiempo)+' s',True,black)
+    costo = fuente.render('El costo de la solucion encontrada es de: '+str(final.showCosto()),True,black)
+    screen.blit(title,(25,60))
+    screen.blit(nodos,(25,120))
+    screen.blit(profundidad,(25,160))
+    screen.blit(time,(25,200))
+    screen.blit(costo,(25,240))
+
 #se carga la imagen del raton y demas
 imgsize = 90
 auxsize = 85
@@ -107,13 +143,6 @@ gokuImg =  pygame.transform.scale(pygame.image.load('imagenes/goku.png'), (auxsi
 freezerImg = pygame.transform.scale(pygame.image.load('imagenes/freezer.png'), (auxsize,auxsize))
 cellImg = pygame.transform.scale(pygame.image.load('imagenes/cell.png'), (auxsize,auxsize))
 seedImg = pygame.transform.scale(pygame.image.load('imagenes/semilla.png'), (auxsize,auxsize))
-
-#Definir colores
-black = (0,0,0)
-red = (255,0,0)
-blue = (0,0,255)
-green = (0,255,0)
-white = (255,255,255)
 
 #tamanho de la GUI
 aux1 = n*imgsize

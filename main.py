@@ -2,6 +2,7 @@ import sys
 import numpy as np
 import time
 from nodes import Nodo
+from preguntar import algoritmo
 
 # Aqui se abre el archivo de texto que contiene el mapa y se guarda en la variable board en forma de matriz
 
@@ -16,36 +17,8 @@ def crear_mapa_desde_archivo(nombre_archivo):
 
 mapa = crear_mapa_desde_archivo('Prueba1.txt')
 
-#funcion que le pregunta al usuario que algoritmo desea ejecutar
-def escogerAlgoritmo():
-    tipo = input("ingrese el tipo de busqueda deseado (informada/no informada) ")
-    if tipo == "no informada":
-        choice = input("ingrese el nombre del algoritmo de busqueda no informada que desee ejecutar (costo, amplitud, profundidad):")
-        if choice == "costo":
-            return choice
-        elif choice == "amplitud":
-            return choice
-        elif choice == "profundidad":
-            return choice
-        else:
-            print("escoja un algoritmo de busqueda no informada valido")
-            sys.exit()
-    elif tipo == "informada":
-        choice = input("ingrese el nombre del algoritmo de busqueda informada que desee ejecutar (avara, a*):")
-        if choice == "avara":
-            return choice
-        elif choice == "a*":
-            return choice
-        else:
-            print("escoja un algoritmo de busqueda informada valido")
-            sys.exit()
-    else:
-        print("escoja un tipo de busqueda valido")
-        sys.exit()
-
 # #__________________________________________definicion de variables globales
 
-algoritmo = escogerAlgoritmo()
 solucion  = []
 camino = []
 nodos_solucion = []
@@ -445,7 +418,8 @@ def expandirNodo(nodo):
            #aqui se debe detener la busqueda y devolver el camino de la solucion
         camino.reverse()
         nodos_solucion.reverse()
-        tiempo = round(tiempo_final - tiempo_inicial,9)
+        global tiempo
+        tiempo= round(tiempo_final - tiempo_inicial,6)
         #aqui se printea la informacion requerida sobre la ejecucion del algoritmo
         print('-----------------------------------------------')
         print(' Algoritmo de busqueda ejecutado:', algoritmo)

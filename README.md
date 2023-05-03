@@ -11,3 +11,10 @@ Para ejecutar este proyecto es necesario tener instalado lo siguiente:
   * pygame 2.3.0 (recomendable)
   * numpy 1.24.3 (recomendable)
 ***
+## Ejecución
+El proyecto se ejecuta con el siguiente comando estando en la carpeta del proyecto:
+```
+$ python gui.py
+```
+***
+

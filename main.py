@@ -1,398 +1,515 @@
-import pygame , sys
-import random
-import math
+import sys
+import numpy as np
+import time
 from nodes import Nodo
 
 # Aqui se abre el archivo de texto que contiene el mapa y se guarda en la variable board en forma de matriz
-archivo = open("Prueba1.txt")
-info = archivo.readlines()
-#print(info)
-archivo.close()
 
+def crear_mapa_desde_archivo(nombre_archivo):
+    with open(nombre_archivo) as archivo:
+        filas = archivo.readlines()
+        mapa = []
+        for fila in filas:
+            mapa.append([int(x) for x in fila.split()])
+        archivo.close()
+        return np.array(mapa)
+
+mapa = crear_mapa_desde_archivo('Prueba1.txt')
+
+#funcion que le pregunta al usuario que algoritmo desea ejecutar
+def escogerAlgoritmo():
+    tipo = input("ingrese el tipo de busqueda deseado (informada/no informada) ")
+    if tipo == "no informada":
+        choice = input("ingrese el nombre del algoritmo de busqueda no informada que desee ejecutar (costo, amplitud, profundidad):")
+        if choice == "costo":
+            return choice
+        elif choice == "amplitud":
+            return choice
+        elif choice == "profundidad":
+            return choice
+        else:
+            print("escoja un algoritmo de busqueda no informada valido")
+            sys.exit()
+    elif tipo == "informada":
+        choice = input("ingrese el nombre del algoritmo de busqueda informada que desee ejecutar (avara, a*):")
+        if choice == "avara":
+            return choice
+        elif choice == "a*":
+            return choice
+        else:
+            print("escoja un algoritmo de busqueda informada valido")
+            sys.exit()
+    else:
+        print("escoja un tipo de busqueda valido")
+        sys.exit()
+
+# #__________________________________________definicion de variables globales
+
+algoritmo = escogerAlgoritmo()
+solucion  = []
+camino = []
+nodos_solucion = []
+tiempo_inicial = time.time()
+tiempo_final = 0
+nodosExpandidos = 0
+# #Creamos un nodo unicial, en donde se guardara el estado inicial
+nodo_raiz= Nodo(costo=0, semillas=[],semillas_almacenadas=0, bolas=[], freezers=[], cells=[], kakaroto=[])
 cola = [] #se guardaran los nodos en este array
-board = []
-for i in info:
-    fila = i.split()
-    for h in range(len(fila)):
-        fila[h] = int(fila[h])
-    board.append(fila)
 
-#funcion que encuentra la posicion inicial de todos los elementos del tablero
-
+# #funcion que encuentra la posicion inicial de todos los elementos del tablero
 def find_initial_positions(board):
     freezers = []
     cells = []
     balls = []
     seeds = []
-    goku = []
+    kakaroto = None
     for i in range(len(board)):
         for h in range(len(board)):
-            if board[i][h] == 2:
-                goku.append([i,h])
-            elif board[i][h] == 3:
+            if mapa[i][h] == 2:
+                kakaroto = [i,h]
+                mapa[i][h]=0
+            elif mapa[i][h] == 3:
                 freezers.append([i,h])
-            elif board[i][h] == 4:
+            elif mapa[i][h] == 4:
                 cells.append([i,h])
-            elif board[i][h] == 5:
+            elif mapa[i][h] == 5:
                 seeds.append([i,h])
-            elif board[i][h] == 6:
+            elif mapa[i][h] == 6:
                 balls.append([i,h])
-    return goku,freezers,cells,seeds,balls
 
-#funcion que le pregunta al usuario que algoritmo desea ejecutar
-def escogerAlgoritmo():
-    choice = input("ingrese el nombre del algoritmo de busqueda que desee ejecutar (costo, amplitud, profundidad, nombre, nombre):")
-    if choice == "costo":
-        return choice
-    elif choice == "amplitud":
-        return choice
-    elif choice == "profundidad":
-        return choice
-    elif choice == "nombre":
-        return choice
-    elif choice == "nombre":
-        return choice
+    nodo_raiz.semillas=seeds
+    nodo_raiz.bolas=balls
+    nodo_raiz.freezers=freezers
+    nodo_raiz.cells=cells
+    nodo_raiz.kakaroto=kakaroto
+
+    cola.append(nodo_raiz)
+    return kakaroto,freezers,cells,seeds,balls
+
+def verificar_freezers(nodo, posicion):
+    freezers = nodo.showFreezers().copy()
+    semillas_almacenadas = nodo.showSemillasAlmacenadas()
+    costo = nodo.showCosto()
+    if posicion in nodo.showFreezers():
+        if nodo.showSemillasAlmacenadas()>0:
+            freezers.remove(posicion)
+            semillas_almacenadas = semillas_almacenadas - 1
+            costo = costo+1
+        else:
+            costo = costo+4
     else:
-        print("escoja un algoritmo de busqueda valido")
-        sys.exit()
-"""
-def movements_table (sensores, hq):
-    left_sen = sensores[0]
-    right_sen = sensores[1]
-    down_sen = sensores[2]
-    up_sen = sensores[3]
+        costo = costo+1
+    return freezers, semillas_almacenadas, costo
 
-    # the movements will be represented by numbers  1 = up, 2 = left, 3 = down, 4 = right
-    # when the mouse found the cheese, this will be represented by the number 5 = found cheese
-    # when any sensor is true, it means that the mouse can go in that direction, otherwise he cant (false)
-    action = 0
-    if hq:
-        action = 5
-        return action
-    elif (left_sen and up_sen and right_sen and down_sen and hq == False): 
-        action = 1
-        return action
-    
-    elif (left_sen and up_sen and right_sen and down_sen == False and hq == False): 
-        action = 1
-        return action
-    
-    elif (left_sen and up_sen and right_sen == False and down_sen and hq == False): 
-        action = 1
-        return action
-    
-    elif (left_sen and up_sen and right_sen == False and down_sen == False and hq == False): 
-        action = 1
-        return action
-    
-    elif (left_sen and up_sen == False  and right_sen and down_sen and hq == False): 
-        action = 2
-        return action
-    
-    elif (left_sen and up_sen == False and right_sen and down_sen == False and hq == False): 
-        action = 4
-        return action
-    
-    elif (left_sen and up_sen == False and right_sen == False and down_sen and hq == False): 
-        action = 2
-        return action
-    
-    elif (left_sen and up_sen == False and right_sen == False and down_sen == False and hq == False): 
-        action = 2
-        return action
-    
-    elif (left_sen == False and up_sen and right_sen and down_sen and hq == False): 
-        action = 1
-        return action
-    
-    elif (left_sen == False and up_sen and right_sen and down_sen == False and hq == False): 
-        action = 4
-        return action
-
-    elif (left_sen == False and up_sen and right_sen == False and down_sen and hq == False): 
-        action = 3
-        return action
-    
-    elif (left_sen == False and up_sen and right_sen == False and down_sen == False and hq == False): 
-        action = 1
-        return action
-
-    elif (left_sen == False and up_sen == False and right_sen and down_sen and hq == False): 
-        action = 4
-        return action
-    
-    elif (left_sen == False and up_sen == False and right_sen and down_sen == False and hq == False): 
-        action = 4
-        return action
-    
-    elif (left_sen == False and up_sen == False and right_sen == False and down_sen and hq == False): 
-        action = 3
-        return action
-"""
-"""
-def huele_queso():
-    if queso == mouse:
-        return True
-    else: 
-        return False
-"""
-"""
-def generate_matrix(n,m):
-    matriz = []
-    for i in range(n):
-        matriz.append([])
-        for h in range(m):
-            if i == mouse.get('y') and h == mouse.get('x'):
-                matriz[i].append(1) 
-            elif i == queso.get('y') and h == queso.get('x'):
-                matriz[i].append(1) 
-    return matriz
-"""
-"""
-#funcion retorna 1 o 0 dependiendo del valor que se genere automaticamente
-#se le da mas posibillidad de devolver 1 para que no hayan muchas paredes
-#1 es un espacio libre para avanzar
-#0 no es un espacio libre
-def wall_generator():
-    numero = random.randint(0,10)
-    if numero == 0 or numero == 8:
-        return 0
+def verificar_cells(nodo, posicion):
+    cells = nodo.showCells().copy()
+    semillas_almacenadas = nodo.showSemillasAlmacenadas()
+    costo = nodo.showCosto()
+    if posicion in nodo.showCells():
+        if nodo.showSemillasAlmacenadas()>0:
+            cells.remove(posicion)
+            semillas_almacenadas = semillas_almacenadas - 1
+            costo = nodo.showCosto()+1
+        else:
+            costo = nodo.showCosto()+7
     else:
-        return 1
-"""
+        costo = nodo.showCosto()+1
+    return cells, semillas_almacenadas, costo
 
-#solo funciona para matrices nxn
+def verificar_semillas(nodo, posicion):
+    semillas = nodo.showSemillas().copy()
+    semillas_almacenadas = nodo.showSemillasAlmacenadas()
+    if posicion in nodo.showSemillas():
+        semillas.remove(posicion)
+        semillas_almacenadas = semillas_almacenadas + 1
+    return semillas, semillas_almacenadas
 
-#se crea el tablero, nota si se actualiza el tablero se debe de referenciar otra vez ya que no esta en el while del refresco
-def create_board (matriz,size):
-    i = -1 #desplazamiento en las columnas
-    j = 0  #desplazamiento en las filas
-    tamanho = len(matriz) #tamanho de la matriz
-    aux = 0 #corrimiento de los cuadrados
-    for rows in matriz:
-        i = i+1
-        for cells in rows:
-            if (cells == 0):
-                screen.blit(roadImage, ((j*size)+aux,(i*size)+aux))
-            elif(cells == 1):
-                screen.blit(wallImage, ((j*size)+aux,(i*size)+aux))
-            else: 
-                screen.blit(roadImage, ((j*size)+aux,(i*size)+aux))
-            j = j+1
-            if (j==tamanho):
-                j = 0
-                break
-            if (i==tamanho):
-                break
-    return True
-#-----------------
+def verificar_bolas(nodo, posicion):
+    bolas = nodo.showBolas().copy()
+    if posicion in nodo.showBolas():
+        bolas.remove(posicion)
+    return bolas
+    
+def puede_moverse(nodo):
+    #print("posicion inicial kakaroto:",nodo.showKakaroto())
+    #print('valor heuristica:', nodo.heuristica())
+    nodos_posibles = []
+    nodos_recorridos = nodo.recorrer_arbol_arriba()
 
-# tamaño de las filas y columnas 
-# debe ser nxn
-n = len(board)
-m = len(board)
-print(n)
+    #----------arriba-------------
+    fila_nueva = nodo.showKakaroto()[0] - 1
+    #0,Si es un espacio vacio
+    if fila_nueva >= 0 and mapa[fila_nueva, nodo.showKakaroto()[1]] == 0:
+        nodo_aux = Nodo(nodo.costo+1, nodo.semillas, nodo.semillas_almacenadas, nodo.bolas, nodo.freezers, nodo.cells, kakaroto=[nodo.showKakaroto()[0]-1,nodo.showKakaroto()[1]],padre=nodo, operador="arriba")
+        if algoritmo == "profundidad":
+            if nodo_aux.nodo_valido(nodos_recorridos):
+                nodos_posibles.append(nodo_aux)
+        else:
+            if nodo_aux.comparar_posicion():
+                if nodo_aux.nodo_puede_devolverse():
+                    nodos_posibles.append(nodo_aux)
+            else:
+                nodos_posibles.append(nodo_aux)
+
+    #3,Si es un Frezzer
+    elif fila_nueva >= 0 and mapa[fila_nueva, nodo.showKakaroto()[1]] == 3:
+        freezers, semillas_almacenadas, costo = verificar_freezers(nodo,[fila_nueva, nodo.showKakaroto()[1]])
+        nodo_aux = Nodo(costo, nodo.semillas, semillas_almacenadas, nodo.bolas, freezers, nodo.cells,kakaroto=[nodo.showKakaroto()[0]-1,nodo.showKakaroto()[1]], padre=nodo, operador="arriba")
+        if algoritmo == "profundidad":
+            if nodo_aux.nodo_valido(nodos_recorridos):
+                nodos_posibles.append(nodo_aux)
+        else:
+            if nodo_aux.comparar_posicion():
+                if nodo_aux.nodo_puede_devolverse():
+                    nodos_posibles.append(nodo_aux)
+            else:
+                nodos_posibles.append(nodo_aux)
+    
+    #4,Si es un Cell
+    elif fila_nueva >= 0 and mapa[fila_nueva, nodo.showKakaroto()[1]] == 4:
+        cells, semillas_almacenadas, costo = verificar_cells(nodo,[fila_nueva, nodo.showKakaroto()[1]])
+        nodo_aux = Nodo(costo, nodo.semillas, semillas_almacenadas, nodo.bolas, nodo.freezers, cells,kakaroto=[nodo.showKakaroto()[0]-1,nodo.showKakaroto()[1]], padre=nodo, operador="arriba")
+        if algoritmo == "profundidad":
+            if nodo_aux.nodo_valido(nodos_recorridos):
+                nodos_posibles.append(nodo_aux)
+        else:
+            if nodo_aux.comparar_posicion():
+                if nodo_aux.nodo_puede_devolverse():
+                    nodos_posibles.append(nodo_aux)
+            else:
+                nodos_posibles.append(nodo_aux)
+
+    #5,Si es una semilla, falta poner la logica para la semilla
+    elif fila_nueva >= 0 and mapa[fila_nueva, nodo.showKakaroto()[1]] == 5:
+        semillas, semillas_almacenadas = verificar_semillas(nodo, [fila_nueva, nodo.showKakaroto()[1]])
+        nodo_aux = Nodo(nodo.costo+1, semillas, semillas_almacenadas, nodo.bolas, nodo.freezers, nodo.cells,kakaroto=[nodo.showKakaroto()[0]-1,nodo.showKakaroto()[1]], padre=nodo, operador="arriba")
+        if algoritmo == "profundidad":
+            if nodo_aux.nodo_valido(nodos_recorridos):
+                nodos_posibles.append(nodo_aux)
+        else:
+            if nodo_aux.comparar_posicion():
+                if nodo_aux.nodo_puede_devolverse():
+                    nodos_posibles.append(nodo_aux)
+            else:
+                nodos_posibles.append(nodo_aux)
+
+            
+
+    #6,Si es una esfera, falta poner la logica para la esfera
+    elif fila_nueva >= 0 and mapa[fila_nueva, nodo.showKakaroto()[1]] == 6:
+        bolas = verificar_bolas(nodo, [fila_nueva, nodo.showKakaroto()[1]])
+        nodo_aux = Nodo(nodo.costo+1, nodo.semillas, nodo.semillas_almacenadas, bolas, nodo.freezers, nodo.cells, kakaroto=[nodo.showKakaroto()[0]-1,nodo.showKakaroto()[1]], padre=nodo, operador="arriba")
+        if algoritmo == "profundidad":
+            if nodo_aux.nodo_valido(nodos_recorridos):
+                nodos_posibles.append(nodo_aux)
+        else:
+            if nodo_aux.comparar_posicion():
+                if nodo_aux.nodo_puede_devolverse():
+                    nodos_posibles.append(nodo_aux)
+            else:
+                nodos_posibles.append(nodo_aux)
+
+    #----------------izquierda------------
+    columna_nueva = nodo.showKakaroto()[1] - 1
+    if columna_nueva >= 0 and mapa[nodo.showKakaroto()[0], columna_nueva] == 0:
+        nodo_aux = Nodo(nodo.costo+1, nodo.semillas, nodo.semillas_almacenadas, nodo.bolas, nodo.freezers, nodo.cells, kakaroto=[nodo.showKakaroto()[0],nodo.showKakaroto()[1] - 1], padre=nodo, operador="izquierda")
+        if algoritmo == "profundidad":
+            if nodo_aux.nodo_valido(nodos_recorridos):
+                nodos_posibles.append(nodo_aux)
+        else:
+            if nodo_aux.comparar_posicion():
+                if nodo_aux.nodo_puede_devolverse():
+                    nodos_posibles.append(nodo_aux)
+            else:
+                nodos_posibles.append(nodo_aux)
+
+    #3,Si es un Frezzer
+    elif columna_nueva >= 0 and mapa[nodo.showKakaroto()[0], columna_nueva] == 3:
+        freezers, semillas_almacenadas, costo = verificar_freezers(nodo,[nodo.showKakaroto()[0], columna_nueva])
+        nodo_aux = Nodo(costo, nodo.semillas, semillas_almacenadas, nodo.bolas, freezers, nodo.cells,kakaroto=[nodo.showKakaroto()[0],nodo.showKakaroto()[1] - 1], padre=nodo, operador="izquierda")
+        if algoritmo == "profundidad":
+            if nodo_aux.nodo_valido(nodos_recorridos):
+                nodos_posibles.append(nodo_aux)
+        else:
+            if nodo_aux.comparar_posicion():
+                if nodo_aux.nodo_puede_devolverse():
+                    nodos_posibles.append(nodo_aux)
+            else:
+                nodos_posibles.append(nodo_aux)
+
+    #4,Si es un Cell
+    elif columna_nueva >= 0 and mapa[nodo.showKakaroto()[0], columna_nueva] == 4:
+        cells, semillas_almacenadas, costo = verificar_cells(nodo,[nodo.showKakaroto()[0], columna_nueva])
+        nodo_aux = Nodo(costo, nodo.semillas, semillas_almacenadas, nodo.bolas, nodo.freezers, cells,kakaroto=[nodo.showKakaroto()[0],nodo.showKakaroto()[1] - 1], padre=nodo, operador="izquierda")
+        if algoritmo == "profundidad":
+            if nodo_aux.nodo_valido(nodos_recorridos):
+                nodos_posibles.append(nodo_aux)
+        else:
+            if nodo_aux.comparar_posicion():
+                if nodo_aux.nodo_puede_devolverse():
+                    nodos_posibles.append(nodo_aux)
+            else:
+                nodos_posibles.append(nodo_aux)
+
+    #5,Si es una semilla, falta poner la logica para la semilla
+    elif columna_nueva >= 0 and mapa[nodo.showKakaroto()[0], columna_nueva] == 5:
+        semillas, semillas_almacenadas = verificar_semillas(nodo,[nodo.showKakaroto()[0], columna_nueva])
+        nodo_aux = Nodo(nodo.costo+1, semillas, semillas_almacenadas,nodo.bolas, nodo.freezers, nodo.cells,kakaroto=[nodo.showKakaroto()[0],nodo.showKakaroto()[1] - 1], padre=nodo, operador="izquierda")
+        if algoritmo == "profundidad":
+            if nodo_aux.nodo_valido(nodos_recorridos):
+                nodos_posibles.append(nodo_aux)
+        else:
+            if nodo_aux.comparar_posicion():
+                if nodo_aux.nodo_puede_devolverse():
+                    nodos_posibles.append(nodo_aux)
+            else:
+                nodos_posibles.append(nodo_aux)
+
+    #6,Si es una esfera, falta poner la logica para la esfera
+    elif columna_nueva >= 0 and mapa[nodo.showKakaroto()[0], columna_nueva] == 6:
+        bolas = verificar_bolas(nodo, [nodo.showKakaroto()[0], columna_nueva])
+        nodo_aux = Nodo(nodo.costo+1, nodo.semillas, nodo.semillas_almacenadas, bolas, nodo.freezers, nodo.cells, kakaroto=[nodo.showKakaroto()[0],nodo.showKakaroto()[1] - 1], padre=nodo, operador="izquierda")
+        if algoritmo == "profundidad":
+            if nodo_aux.nodo_valido(nodos_recorridos):
+                nodos_posibles.append(nodo_aux)
+        else:
+            if nodo_aux.comparar_posicion():
+                if nodo_aux.nodo_puede_devolverse():
+                    nodos_posibles.append(nodo_aux)
+            else:
+                nodos_posibles.append(nodo_aux)
+
+    #-----------abajo-----------
+    fila_nueva = nodo.showKakaroto()[0] + 1
+
+    if fila_nueva < mapa.shape[0] and mapa[fila_nueva, nodo.showKakaroto()[1]] == 0:
+        nodo_aux = Nodo(nodo.costo+1, nodo.semillas, nodo.semillas_almacenadas, nodo.bolas, nodo.freezers, nodo.cells, kakaroto=[nodo.showKakaroto()[0]+1,nodo.showKakaroto()[1]], padre=nodo, operador="abajo")
+        if algoritmo == "profundidad":
+            if nodo_aux.nodo_valido(nodos_recorridos):
+                nodos_posibles.append(nodo_aux)
+        else:
+            if nodo_aux.comparar_posicion():
+                if nodo_aux.nodo_puede_devolverse():
+                    nodos_posibles.append(nodo_aux)
+            else:
+                nodos_posibles.append(nodo_aux)
+
+#***
+    #3,Si es un Frezzer
+    elif fila_nueva < mapa.shape[0] and mapa[fila_nueva, nodo.showKakaroto()[1]] == 3:
+        freezers, semillas_almacenadas, costo= verificar_freezers(nodo,[fila_nueva, nodo.showKakaroto()[1]])
+        nodo_aux = Nodo(costo, nodo.semillas, semillas_almacenadas, nodo.bolas, freezers, nodo.cells,kakaroto=[nodo.showKakaroto()[0]+1,nodo.showKakaroto()[1]], padre=nodo, operador="abajo")
+        if algoritmo == "profundidad":
+            if nodo_aux.nodo_valido(nodos_recorridos):
+                nodos_posibles.append(nodo_aux)
+        else:
+            if nodo_aux.comparar_posicion():
+                if nodo_aux.nodo_puede_devolverse():
+                    nodos_posibles.append(nodo_aux)
+            else:
+                nodos_posibles.append(nodo_aux)
+    
+    #4,Si es un Cell
+    elif fila_nueva < mapa.shape[0] and mapa[fila_nueva, nodo.showKakaroto()[1]] == 4:
+        cells, semillas_almacenadas, costo = verificar_cells(nodo,[fila_nueva, nodo.showKakaroto()[1]])
+        nodo_aux = Nodo(costo, nodo.semillas, semillas_almacenadas, nodo.bolas, nodo.freezers, cells,kakaroto=[nodo.showKakaroto()[0]+1,nodo.showKakaroto()[1]], padre=nodo, operador="abajo")
+        if algoritmo == "profundidad":
+            if nodo_aux.nodo_valido(nodos_recorridos):
+                nodos_posibles.append(nodo_aux)
+        else:
+            if nodo_aux.comparar_posicion():
+                if nodo_aux.nodo_puede_devolverse():
+                    nodos_posibles.append(nodo_aux)
+            else:
+                nodos_posibles.append(nodo_aux)
+
+    #5,Si es una semilla, falta poner la logica para la semilla
+    elif fila_nueva < mapa.shape[0] and mapa[fila_nueva, nodo.showKakaroto()[1]] == 5:
+        semillas, semillas_almacenadas = verificar_semillas(nodo, [fila_nueva, nodo.showKakaroto()[1]])
+        nodo_aux = Nodo(nodo.costo+1, semillas, semillas_almacenadas, nodo.bolas, nodo.freezers, nodo.cells, kakaroto=[nodo.showKakaroto()[0]+1,nodo.showKakaroto()[1]], padre=nodo, operador="abajo")
+        if algoritmo == "profundidad":
+            if nodo_aux.nodo_valido(nodos_recorridos):
+                nodos_posibles.append(nodo_aux)
+        else:
+            if nodo_aux.comparar_posicion():
+                if nodo_aux.nodo_puede_devolverse():
+                    nodos_posibles.append(nodo_aux)
+            else:
+                nodos_posibles.append(nodo_aux)
+
+    #6,Si es una esfera, falta poner la logica para la esfera
+    elif fila_nueva < mapa.shape[0] and mapa[fila_nueva, nodo.showKakaroto()[1]] == 6:
+        bolas = verificar_bolas(nodo, [fila_nueva, nodo.showKakaroto()[1]])
+        nodo_aux = Nodo(nodo.costo+1, nodo.semillas, nodo.semillas_almacenadas,bolas, nodo.freezers, nodo.cells, kakaroto=[nodo.showKakaroto()[0]+1,nodo.showKakaroto()[1]], padre=nodo, operador="abajo")
+        if algoritmo == "profundidad":
+            if nodo_aux.nodo_valido(nodos_recorridos):
+                nodos_posibles.append(nodo_aux)
+        else:
+            if nodo_aux.comparar_posicion():
+                if nodo_aux.nodo_puede_devolverse():
+                    nodos_posibles.append(nodo_aux)
+            else:
+                nodos_posibles.append(nodo_aux)
+
+    #----------------------derecha----------------
+
+    columna_nueva = nodo.showKakaroto()[1] + 1
+    if columna_nueva < mapa.shape[1] and mapa[nodo.showKakaroto()[0], columna_nueva] == 0:
+        nodo_aux = Nodo(nodo.costo+1, nodo.semillas, nodo.semillas_almacenadas,nodo.bolas, nodo.freezers, nodo.cells, kakaroto=[nodo.showKakaroto()[0],nodo.showKakaroto()[1] + 1], padre=nodo, operador="derecha")
+        if algoritmo == "profundidad":
+            if nodo_aux.nodo_valido(nodos_recorridos):
+                nodos_posibles.append(nodo_aux)
+        else:
+            if nodo_aux.comparar_posicion():
+                if nodo_aux.nodo_puede_devolverse():
+                    nodos_posibles.append(nodo_aux)
+            else:
+                nodos_posibles.append(nodo_aux)
+    
+    #3,Si es un Frezzer
+    elif columna_nueva < mapa.shape[1] and mapa[nodo.showKakaroto()[0], columna_nueva] == 3:
+        freezers, semillas_almacenadas, costo = verificar_freezers(nodo,[nodo.showKakaroto()[0], columna_nueva])
+        nodo_aux = Nodo(costo, nodo.semillas, semillas_almacenadas,nodo.bolas, freezers, nodo.cells,kakaroto=[nodo.showKakaroto()[0],nodo.showKakaroto()[1] + 1], padre=nodo, operador="derecha")
+        if algoritmo == "profundidad":
+            if nodo_aux.nodo_valido(nodos_recorridos):
+                nodos_posibles.append(nodo_aux)
+        else:
+            if nodo_aux.comparar_posicion():
+                if nodo_aux.nodo_puede_devolverse():
+                    nodos_posibles.append(nodo_aux)
+            else:
+                nodos_posibles.append(nodo_aux)
+
+    #4,Si es un Cell
+    elif columna_nueva < mapa.shape[1] and mapa[nodo.showKakaroto()[0], columna_nueva] == 4:
+        cells, semillas_almacenadas, costo = verificar_cells(nodo,[nodo.showKakaroto()[0], columna_nueva])
+        nodo_aux = Nodo(costo, nodo.semillas, semillas_almacenadas,nodo.bolas, nodo.freezers, cells,kakaroto=[nodo.showKakaroto()[0],nodo.showKakaroto()[1] + 1], padre=nodo, operador="derecha")
+        if algoritmo == "profundidad":
+            if nodo_aux.nodo_valido(nodos_recorridos):
+                nodos_posibles.append(nodo_aux)
+        else:
+            if nodo_aux.comparar_posicion():
+                if nodo_aux.nodo_puede_devolverse():
+                    nodos_posibles.append(nodo_aux)
+            else:
+                nodos_posibles.append(nodo_aux)
+
+    #5,Si es una semilla, falta poner la logica para la semilla
+    elif columna_nueva < mapa.shape[1] and mapa[nodo.showKakaroto()[0], columna_nueva] == 5:
+        semillas, semillas_almacenadas = verificar_semillas(nodo, [nodo.showKakaroto()[0], columna_nueva])
+        nodo_aux = Nodo(nodo.costo+1, semillas, semillas_almacenadas,nodo.bolas, nodo.freezers, nodo.cells,kakaroto=[nodo.showKakaroto()[0],nodo.showKakaroto()[1] + 1], padre=nodo, operador="derecha")
+        if algoritmo == "profundidad":
+            if nodo_aux.nodo_valido(nodos_recorridos):
+                nodos_posibles.append(nodo_aux)
+        else:
+            if nodo_aux.comparar_posicion():
+                if nodo_aux.nodo_puede_devolverse():
+                    nodos_posibles.append(nodo_aux)
+            else:
+                nodos_posibles.append(nodo_aux)
+
+    #6,Si es una esfera, falta poner la logica para la esfera
+    elif columna_nueva < mapa.shape[1] and mapa[nodo.showKakaroto()[0], columna_nueva] == 6:
+        bolas = verificar_bolas(nodo, [nodo.showKakaroto()[0], columna_nueva])
+        nodo_aux = Nodo(nodo.costo+1, nodo.semillas, nodo.semillas_almacenadas,bolas, nodo.freezers, nodo.cells, kakaroto=[nodo.showKakaroto()[0],nodo.showKakaroto()[1] + 1], padre=nodo, operador="derecha")
+        if algoritmo == "profundidad":
+            if nodo_aux.nodo_valido(nodos_recorridos):
+                nodos_posibles.append(nodo_aux)
+        else:
+            if nodo_aux.comparar_posicion():
+                if nodo_aux.nodo_puede_devolverse():
+                    nodos_posibles.append(nodo_aux)
+            else:
+                nodos_posibles.append(nodo_aux)
+
+    return nodos_posibles
 #-----------------#
-"""
-def generate_rata():
-    mouse = {'x':0, 'y':0}
-    mouse.update({'x':random.randint(0,n-1), 'y':random.randint(0,m-1)})
-    return  mouse
-"""
-
-"""
-                                    # the movements will be represented by numbers  1 = up, 2 = left, 3 = down, 4 = right
-                                    def move_mouse(action):
-                                    if action == 1:
-                                        mouse.update({'y':mouse.get('y')-1})
-                                    elif action == 2:
-                                        mouse.update({'x':mouse.get('x')-1})
-                                    elif action == 3:
-                                        mouse.update({'y':mouse.get('y')+1})
-                                    elif action == 4:
-                                        mouse.update({'x':mouse.get('x')+1})
-                                    elif action == 5:
-                                        print("huele a queso")
-                                        sys.exit()
-""" 
-"""
-def movement_rata(matriz):
-
-    left_sen = False
-    right_sen = False
-    up_sen = False
-    down_sen = False
-
-    if mouse.get('x') == 0:
-        left_sen = False
-        if mouse.get('y') == 0:
-            up_sen = False  
-            if matriz[mouse.get('y')][mouse.get('x')+1] == 1:
-                right_sen = True
-            if matriz[mouse.get('y')+1][mouse.get('x')] == 1:
-                down_sen = True
-            return [left_sen,right_sen,down_sen,up_sen]
-        elif mouse.get('y') == n-1:
-            down_sen = False
-            if matriz[mouse.get('y')][mouse.get('x')+1] == 1:
-                right_sen = True
-            if matriz[mouse.get('y')-1][mouse.get('x')] == 1:
-                up_sen = True
-            return [left_sen,right_sen,down_sen,up_sen]
-        else:
-            if matriz[mouse.get('y')][mouse.get('x')+1] == 1:
-                right_sen = True
-            if matriz[mouse.get('y')-1][mouse.get('x')] == 1:
-                up_sen = True
-            if matriz[mouse.get('y')+1][mouse.get('x')] == 1:
-                down_sen = True
-            return [left_sen,right_sen,down_sen,up_sen]
-    if mouse.get('x') == n-1:
-        right_sen = False
-        if mouse.get('y') == 0:
-            up_sen = False
-            if matriz[mouse.get('y')][mouse.get('x')-1] == 1:
-                left_sen = True
-            if matriz[mouse.get('y')+1][mouse.get('x')] == 1:
-                down_sen = True
-            return [left_sen,right_sen,down_sen,up_sen]
-        elif mouse.get('y') == n-1:
-            down_sen = False
-            if matriz[mouse.get('y')][mouse.get('x')-1] == 1:
-                left_sen = True
-            if matriz[mouse.get('y')-1][mouse.get('x')] == 1:
-                up_sen = True
-            return [left_sen,right_sen,down_sen,up_sen]
-        else:
-            if matriz[mouse.get('y')][mouse.get('x')-1] == 1:
-                left_sen = True
-            if matriz[mouse.get('y')-1][mouse.get('x')] == 1:
-                up_sen = True
-            if matriz[mouse.get('y')+1][mouse.get('x')] == 1:
-                down_sen = True
-            return [left_sen,right_sen,down_sen,up_sen]
-    if mouse.get('y') == 0:
-        up_sen = False
-        if matriz[mouse.get('y')][mouse.get('x')-1] == 1:
-            left_sen = True
-        if matriz[mouse.get('y')][mouse.get('x')+1] == 1:
-            right_sen = True
-        if matriz[mouse.get('y')+1][mouse.get('x')] == 1:
-            down_sen = True
-        return [left_sen,right_sen,down_sen,up_sen]
-    if mouse.get('y') == n-1:
-        down_sen = False
-        if matriz[mouse.get('y')][mouse.get('x')-1] == 1:
-            left_sen = True
-        if matriz[mouse.get('y')][mouse.get('x')+1] == 1:
-            right_sen = True
-        if matriz[mouse.get('y')-1][mouse.get('x')] == 1:
-            up_sen = True
-        return [left_sen,right_sen,down_sen,up_sen]
-    else:
-        if matriz[mouse.get('y')][mouse.get('x')-1] == 1:
-            left_sen = True
-        if matriz[mouse.get('y')][mouse.get('x')+1] == 1:
-            right_sen = True
-        if matriz[mouse.get('y')-1][mouse.get('x')] == 1:
-            up_sen = True
-        if matriz[mouse.get('y')+1][mouse.get('x')] == 1:
-            down_sen = True
-        return [left_sen,right_sen,down_sen,up_sen]
-"""
 # llamdo de la funcion que obtiene las posiciones iniciales de los elementos
-kakaroto,freezers,cells,seeds,balls = find_initial_positions(board)
+kakaroto,freezers,cells,seeds,balls = find_initial_positions(mapa)
 
 #funcion que se encarga de expandir un nodo
+def gestionarNodos(nodos):
+    for i in nodos:
+        agregarNodoCola(i)
 
 def expandirNodo(nodo):
+    global nodosExpandidos
+    nodosExpandidos = nodosExpandidos + 1
     if nodo.esMeta():
-        pass    #aqui se debe detener la busqueda y devolver el camino de la solucion
+        tiempo_final=time.time()
+        solucion.append(True)
+        for node in nodo.recorrer_arbol_arriba():
+            #print("Camino",node.showKakaroto())
+            camino.append(node.showKakaroto())              #Verificar si se puede borrar
+            nodos_solucion.append(node)
+           #aqui se debe detener la busqueda y devolver el camino de la solucion
+        camino.reverse()
+        nodos_solucion.reverse()
+        tiempo = round(tiempo_final - tiempo_inicial,9)
+        #aqui se printea la informacion requerida sobre la ejecucion del algoritmo
+        print('-----------------------------------------------')
+        print(' Algoritmo de busqueda ejecutado:', algoritmo)
+        print('-----------------------------------------------')
+        print("la cantidad de nodos que se expandieron es de: ", nodosExpandidos)
+        print('Profundidad del arbol de busqueda:', nodo.showProfundidad())
+        print('El tiempo de ejecucion del algoritmo de busqueda fue de: {} segundos'.format(tiempo))
+        print("El costo de la solucion encontrada es de: ", nodo.showCosto())
     else:
-        pass    #aqui se debe llamar a la funcion que genera los hijos del nodo y meterlos en la cola de nodos
+        gestionarNodos(puede_moverse(nodo))
 
 def expandirCola():
     if algoritmo == "costo":
-        pass
+        nodo = cola.pop(nodoBarato())  # remueve el nodo que tenga el costo mas bajo
+        expandirNodo(nodo)
     elif algoritmo == "amplitud":
         nodo = cola.pop(0)   #remueve el primer elemento de la cola y lo expande
-        expandirNodo(nodo)
+        expandirNodo(nodo) 
     elif algoritmo == "profundidad":
-        pass
-    elif algoritmo == "nombre":
-        pass
-    elif algoritmo == "nombre":
-        pass
+        nodo = cola.pop(0)   #remueve el primer elemento de la cola y lo expande
+        expandirNodo(nodo) 
+    elif algoritmo == "avara":
+        nodo = cola.pop(nodoMenorHeuristica())
+        expandirNodo(nodo)
+    elif algoritmo == "a*":
+        nodo = cola.pop(nodoMenorCostoEstimado())
+        expandirNodo(nodo)
 
-#__________________________________________definicion de variables globales
+def nodoBarato():
+    menor = cola[0]
+    indice = None
+    for i in range(len(cola)):
+        nuevo_costo = cola[i].showCosto()
+        if menor.showCosto() >= nuevo_costo:
+            menor = cola[i]
+            indice = i
+    return indice
 
-algoritmo =escogerAlgoritmo()
+def nodoMenorHeuristica():
+    menor = cola[0]
+    indice = None
+    for i in range(len(cola)):
+        nuevo_costo_estimado = cola[i].heuristica()
+        if menor.heuristica() >= nuevo_costo_estimado:
+            menor = cola[i]
+            indice = i
+    return indice
 
-#__________________________________________llamadas y definiciones de funciones que pintan la GUI
-#------------
-goku = {"row":kakaroto[0][1], "col":kakaroto[0][0]}
+def nodoMenorCostoEstimado():
+    menor = cola[0]
+    indice = None
+    for i in range(len(cola)):
+        nuevo_costo_estimado = cola[i].heuristicaCosto()
+        if menor.heuristicaCosto() >= nuevo_costo_estimado:
+            menor = cola[i]
+            indice = i
+    return indice
 
-#------------
-def pintar_freezers(freezers):
-    for i in range(len(freezers)):
-        row = freezers[i][0]
-        col = freezers[i][1]
-        screen.blit(freezerImg, ((col*imgsize),(row*imgsize)))
-def pintar_cells(cells):
-    for i in range(len(cells)):
-        row = cells[i][0]
-        col = cells[i][1]
-        screen.blit(cellImg, ((col*imgsize),(row*imgsize)))
-def pintar_seeds(seeds):
-    for i in range(len(seeds)):
-        row = seeds[i][0]
-        col = seeds[i][1]
-        screen.blit(seedImg, ((col*imgsize),(row*imgsize)))
-def pintar_balls(balls):
-    for i in range(len(balls)):
-        row = balls[i][0]
-        col = balls[i][1]
-        screen.blit(ballImage, ((col*imgsize),(row*imgsize)))
-
-# Comprueba si un nodo que se le ingrese es una meta    
-
-def pintar_juego():
-    #fondo blanco
-    screen.fill(white)
-    #pintar el tablero
-    #create_board(tablero,imgsize)
-    create_board(board,imgsize)
-    #pintar las esferas
-    pintar_balls(balls)
-    #screen.blit(ballImage, ((queso.get('x')*imgsize),(queso.get('y')*imgsize)))
-    #pintar un freezer test
-    pintar_freezers(freezers)
-    #screen.blit(freezerImg, ((2*imgsize),(0*imgsize)))
-    #pintar un cell 
-    pintar_cells(cells)
-    #screen.blit(cellImg, ((2*imgsize),(5*imgsize)))
-    #pintar una semilla
-    pintar_seeds(seeds)
-    #screen.blit(seedImg, ((1*imgsize),(0*imgsize)))
-    #pintar a goku
-    screen.blit(gokuImg, ((goku.get('row')*imgsize),(goku.get('col')*imgsize)))
-
-# funcion que le ingresa la lista de movimientos y actualiza la posicion de goku
-# 1 = izquierda
-# 2 = arriba
-# 3 = derecha
-# 4 = abajo
-
-def moverGoku(lista):
-    for i in lista:
-        if i == 1:
-            goku.update(col = goku['col'] - 1) # falta hacer que se vay pintando por iteracion
-        elif i == 2:
-            goku.update(row = goku['row'] + 1)
-        elif i == 3:
-            goku.update(col = goku['col'] + 1)
-        elif i == 4:
-            goku.update(row = goku['row'] - 1)
+def crearNodos():
+    #solucion=25
+    while len(solucion) == 0:
+        #solucion=solucion-1   
+        expandirCola()     #aqui va la logica de crear todos los nodos
+        #pass    
 
 def agregarNodoCola(nodo):
     if algoritmo == "costo":
@@ -401,67 +518,14 @@ def agregarNodoCola(nodo):
         cola.append(nodo) #agrega el nodo al final de la cola
     elif algoritmo == "profundidad":
         cola.insert(0,nodo) #agrega el nodo al principio de la cola
-    elif algoritmo == "nombre":
-        pass
-    elif algoritmo == "nombre":
-        pass
+    elif algoritmo == "avara":
+        cola.append(nodo)
+    elif algoritmo == "a*":
+        cola.append(nodo)
 
-#se inicia la aplicacion
-pygame.init()
+#expandirNodo(nodo_raiz)
 
-#se carga la imagen del raton y demas
-imgsize = 90
-auxsize = 85
-ballImage = pygame.transform.scale(pygame.image.load('imagenes/ball.png'), (auxsize,auxsize))
-roadImage = pygame.image.load('imagenes/path.png')
-wallImage = pygame.image.load('imagenes/muro.png')
-gokuImg =  pygame.transform.scale(pygame.image.load('imagenes/goku.png'), (auxsize,auxsize))
-freezerImg = pygame.transform.scale(pygame.image.load('imagenes/freezer.png'), (auxsize,auxsize))
-cellImg = pygame.transform.scale(pygame.image.load('imagenes/cell.png'), (auxsize,auxsize))
-seedImg = pygame.transform.scale(pygame.image.load('imagenes/semilla.png'), (auxsize,auxsize))
+#generar la solucion del algoritmo inicial
+crearNodos()
 
-#Definir colores
-black = (0,0,0)
-red = (255,0,0)
-blue = (0,0,255)
-green = (0,255,0)
-white = (255,255,255)
 
-#tamanho de la GUI
-aux1 = n*imgsize
-aux2 = m*imgsize
-size = (aux1,aux2)
-
-#definicion de la GUI
-screen = pygame.display.set_mode(size)
-
-#pintar el tablero inicial
-
-nodoInicial = Nodo(0,0,[0],0,0,0)
-print(nodoInicial.esMeta())
-print(nodoInicial.showOperador())
-print(nodoInicial.showProfundidad())
-agregarNodoCola(nodoInicial) #agrega un nodo a la cola
-expandirCola() #expande la cola o sea saca el primer elemento
-pintar_juego()
-
-#while para la logica o los eventos
-
-auxiliar=1
-movimientoGoku = [3,3,3,3,3,3,3,4,4,4,4,4] # se deben de ingresar la lista de los movimientos de la solucion encontrada
-while True:
-    tiempo = math.floor(pygame.time.get_ticks()/1000)
-    if tiempo == auxiliar:
-        if(auxiliar > len(movimientoGoku)): #se termina el juego cuando goku realizo todos los movimientos
-            sys.exit()
-        moverGoku(movimientoGoku[auxiliar-1:auxiliar]) #se le ingresa de 1 en 1 los valores en movimientoGoku
-        pintar_juego()          # Se debe de modificar esta funcion para pintar los valores que se le ingresan
-                                # el goku mata un freezer entonces debe de borrarse 
-        auxiliar = auxiliar+1
-    pygame.display.flip()
-    pygame.display.update()
-    
-    for event in pygame.event.get():
-        
-        if event.type == pygame.QUIT:
-            sys.exit()

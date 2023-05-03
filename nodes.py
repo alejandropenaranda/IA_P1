@@ -1,13 +1,16 @@
 class Nodo:
-    def __init__(self,costo,semillas,bolas,frezzers,cells,kakaroto,padre=None,operador=None):
+    def __init__(self,costo,semillas,semillas_almacenadas,bolas,freezers,cells,kakaroto,padre=None,operador=None):
         self.costo = costo
         self.padre = padre
         self.operador = operador # operador utilizado para que goku llegara a esta posicion
         self.bolas = bolas
-        self.frezzers = frezzers
+        self.freezers = freezers
         self.cells = cells
         self.kakaroto = kakaroto # posicion actual del goku
         self.semillas = semillas
+        self.primerobjetivo = 0
+        self.val_heuristica = 0
+        self.semillas_almacenadas = semillas_almacenadas
         if padre is None:
             self.profundidad = 0
         else:
@@ -23,10 +26,31 @@ class Nodo:
         return nodos_recorridos
     
     def esMeta(self):
-        if len(self.bolas) == 2:
+        if len(self.bolas) == 0:
             return True
         else:
             return False    
+    
+    def showCosto(self):
+        return self.costo
+    
+    def showSemillas(self):
+        return self.semillas
+
+    def showSemillasAlmacenadas(self):
+        return self.semillas_almacenadas
+
+    def showBolas(self):
+        return self.bolas
+    
+    def showFreezers(self):
+        return self.freezers
+    
+    def showCells(self):
+        return self.cells
+    
+    def showKakaroto(self):
+        return self.kakaroto
     
     def showOperador(self):
         return self.operador
@@ -34,8 +58,85 @@ class Nodo:
     def showProfundidad(self):
         return self.profundidad
     
-    def same_state(self):
-        if self.bolas == self.padre.bolas and self.frezzers == self.padre.freezers and self.cells == self.padre.cells and self.semillas == self.padre.semillas:
+    def nodo_puede_devolverse(self):
+        if self.padre==None:
+            return True
+        elif self.padre.padre == None:
+            return True
+        elif self.bolas != self.padre.padre.bolas or self.freezers != self.padre.padre.freezers or self.cells != self.padre.padre.cells or self.semillas != self.padre.padre.semillas:
             return True
         else:
             return False
+    
+    def nodo_valido(self, lista_nodos):
+        count = 0
+        if self.padre==None:
+            return True
+        for n in lista_nodos:
+            #if self.showKakaroto() in lista_nodos:
+            #print("self_kakaroto:",self.showKakaroto())
+            if self.bolas == n.bolas and self.freezers == n.freezers and self.cells == n.cells and self.semillas == n.semillas and self.kakaroto == n.kakaroto:
+                #print("nodoInvalido",n.kakaroto)
+                count = count+1
+        if count>0:
+            return False
+        else:
+            return True
+            # else:
+            #     return True
+
+    def comparar_posicion(self):
+        if self.padre==None:
+            return True
+        elif self.padre.padre == None:
+            return True
+        elif self.showKakaroto() == self.padre.padre.showKakaroto():
+            return True
+        else:
+            return False
+
+    def eliminarSemilla(self, semilla):
+        self.semillas.remove(semilla)
+        return self.semillas
+
+    def eliminarBola(self, bola):
+        self.bolas.remove(bola)
+        return self.bolas
+    
+    def definir_primer_objetivo(self,objetivo):
+        self.primerobjetivo = objetivo
+
+    def showValHeuristica(self):
+        return self.val_heuristica
+    
+    def heuristica(self):
+        if len(self.bolas)==2:
+            aux = abs(self.bolas[0][0]-self.kakaroto[0]) + abs(self.bolas[0][1]-self.kakaroto[1])
+            aux2 = abs(self.bolas[1][0]-self.kakaroto[0]) + abs(self.bolas[1][1]-self.kakaroto[1])
+            if aux>aux2:
+                self.definir_primer_objetivo(1)
+            else:
+                self.definir_primer_objetivo(0)
+
+            if self.primerobjetivo == 0:
+                distancia1 = abs(self.bolas[0][0]-self.kakaroto[0]) + abs(self.bolas[0][1]-self.kakaroto[1])
+                distancia2 = abs(self.bolas[0][0]-self.bolas[1][0]) + abs(self.bolas[0][1]-self.bolas[1][1])
+                self.val_heuristica = distancia1 + distancia2
+                return self.showValHeuristica()
+            else:
+                distancia1 = abs(self.bolas[1][0]-self.kakaroto[0]) + abs(self.bolas[1][1]-self.kakaroto[1])
+                distancia2 = abs(self.bolas[0][0]-self.bolas[1][0]) + abs(self.bolas[0][1]-self.bolas[1][1])
+                self.val_heuristica = distancia1 + distancia2
+                return self.showValHeuristica()
+        elif len(self.bolas) == 1:
+            aux =  abs(self.bolas[0][0]-self.kakaroto[0]) + abs(self.bolas[0][1]-self.kakaroto[1])
+            self.val_heuristica = aux
+            return self.showValHeuristica()
+        else:
+            self.val_heuristica = 0
+            return self.showValHeuristica()
+    
+    def heuristicaCosto(self):
+        self.heuristica()
+        return self.showCosto() + self.showValHeuristica()
+ 

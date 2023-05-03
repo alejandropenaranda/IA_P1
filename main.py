@@ -1,4 +1,4 @@
-import sys
+
 import numpy as np
 import time
 from nodes import Nodo
@@ -421,13 +421,6 @@ def expandirNodo(nodo):
         global tiempo
         tiempo= round(tiempo_final - tiempo_inicial,6)
         #aqui se printea la informacion requerida sobre la ejecucion del algoritmo
-        print('-----------------------------------------------')
-        print(' Algoritmo de busqueda ejecutado:', algoritmo)
-        print('-----------------------------------------------')
-        print("la cantidad de nodos que se expandieron es de: ", nodosExpandidos)
-        print('Profundidad del arbol de busqueda:', nodo.showProfundidad())
-        print('El tiempo de ejecucion del algoritmo de busqueda fue de: {} segundos'.format(tiempo))
-        print("El costo de la solucion encontrada es de: ", nodo.showCosto())
     else:
         gestionarNodos(puede_moverse(nodo))
 

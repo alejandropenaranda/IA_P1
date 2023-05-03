@@ -1,7 +1,7 @@
 import pygame , sys
 from pygame.locals import *
 import math
-from main import (nodos_solucion , mapa, tiempo, nodosExpandidos)
+from main import (nodos_solucion , mapa, tiempo, nodosExpandidos,algoritmo)
 
 final = nodos_solucion[-1]
 pygame.font.init()
@@ -122,16 +122,18 @@ fuente2 = pygame.font.SysFont('Segoe UI', 40)
 texto = fuente.render("prueba de texto",True,black)
 
 def pintarEstadisticas():
+    text = fuente.render('Algoritmo de busqueda ejecutado: '+str(algoritmo), True, black)
     title = fuente2.render('Estadisticas', True,black)
     nodos = fuente.render('La cantidad de nodos que se expandieron es de: '+str(nodosExpandidos),True,black )
     profundidad = fuente.render('Profundidad del arbol de busqueda: '+str(final.showProfundidad()),True, black)
     time = fuente.render('El tiempo de ejecucion del algoritmo de busqueda fue de: '+str(tiempo)+' s',True,black)
     costo = fuente.render('El costo de la solucion encontrada es de: '+str(final.showCosto()),True,black)
     screen.blit(title,(25,60))
-    screen.blit(nodos,(25,120))
-    screen.blit(profundidad,(25,160))
-    screen.blit(time,(25,200))
-    screen.blit(costo,(25,240))
+    screen.blit(text,(25,120))
+    screen.blit(nodos,(25,170))
+    screen.blit(profundidad,(25,210))
+    screen.blit(time,(25,250))
+    screen.blit(costo,(25,290))
 
 #se carga la imagen del raton y demas
 imgsize = 90

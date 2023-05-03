@@ -1,4 +1,5 @@
 import tkinter as tk
+import sys
 
 # Funcion que muestra la segunda ventana con las opciones de busqueda informada
 def mostrar_opciones():
@@ -38,6 +39,8 @@ def mostrar_opciones():
         def enviar():
             global algoritmo
             algoritmo = var2.get()
+            if algoritmo != 'costo' and algoritmo != 'amplitud' and algoritmo != 'profundidad':
+                sys.exit()
             ventana2.destroy()
               
         # Crear un boton que llame a la funcion enviar
@@ -77,12 +80,15 @@ def mostrar_opciones():
         def enviar():
             global algoritmo
             algoritmo = var2.get()
+            if algoritmo != 'avara' and algoritmo != 'a*':
+                sys.exit()
             ventana2.destroy()
               
         # Crear un boton que llame a la funcion enviar cuando se haga clic en el
         boton2 = tk.Button(ventana2, text="Enviar", command=enviar)
         boton2.pack()
-
+    else:
+        sys.exit()
 # Crea la ventana principal
 ventana = tk.Tk()
 ventana.geometry("400x130")

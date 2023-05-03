@@ -32,7 +32,6 @@ def create_board (matriz,size):
 # debe ser nxn
 n = len(mapa)
 m = len(mapa)
-print("n:",n)
 #-----------------#
 #____________________________________________________________________________________________________________
 def iniciarGUI(nodo):
@@ -41,14 +40,10 @@ def iniciarGUI(nodo):
     pygame.init()
     nodos_lista=nodos_solucion
     auxiliar=1
-    print("nodos_lista:",nodos_lista)
-    print("0",nodo.showKakaroto())
     pintar_juego(nodo) #pinta el tablero
 
     #while para la logica o los eventos
     while auxiliar < len(nodos_lista):
-        #print("aux",auxiliar)
-        #print("len",len(nodos_lista))
         tiempo = math.floor(pygame.time.get_ticks()/1000)
         if tiempo == auxiliar:
             pintar_juego(nodos_lista[auxiliar])

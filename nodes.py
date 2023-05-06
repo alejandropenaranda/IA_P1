@@ -25,6 +25,7 @@ class Nodo:
             self.padre.recorrer_arbol_arriba(nodos_recorridos)
         return nodos_recorridos
     
+    #Verificar si el nodo actual llego a la meta
     def esMeta(self):
         if len(self.bolas) == 0:
             return True
@@ -58,6 +59,7 @@ class Nodo:
     def showProfundidad(self):
         return self.profundidad
     
+    #Funcion que verifica si goku puede devolverse, comparando el nodo "abuelo" con el nuevo nodo
     def nodo_puede_devolverse(self):
         if self.padre==None:
             return True
@@ -68,23 +70,20 @@ class Nodo:
         else:
             return False
     
+    #Funcion que revisa si hay nodos iguales en una lista de nodos
     def nodo_valido(self, lista_nodos):
         count = 0
         if self.padre==None:
             return True
         for n in lista_nodos:
-            #if self.showKakaroto() in lista_nodos:
-            #print("self_kakaroto:",self.showKakaroto())
             if self.bolas == n.bolas and self.freezers == n.freezers and self.cells == n.cells and self.semillas == n.semillas and self.kakaroto == n.kakaroto:
-                #print("nodoInvalido",n.kakaroto)
                 count = count+1
         if count>0:
             return False
         else:
             return True
-            # else:
-            #     return True
 
+    #Funcion que compara la posicion del nodo nuevo con la de su nodo "abuelo"
     def comparar_posicion(self):
         if self.padre==None:
             return True
@@ -139,4 +138,3 @@ class Nodo:
     def heuristicaCosto(self):
         self.heuristica()
         return self.showCosto() + self.showValHeuristica()
- 
